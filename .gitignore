@@ -1,0 +1,34 @@
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing, linting and type-checking caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ManimGL generated output and caches
+/videos/
+/latex_cache/
+/raster_images/
+/vector_images/
+/three_d_models/
+/sounds/
+/downloads/
+
+# IDE and editor files
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
