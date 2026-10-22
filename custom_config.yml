@@ -1,7 +1,7 @@
 
 directories:
   mirror_module_path: False
-  base: "/home/ojop/github_projects/rubiks_sim"
+  base: "."
   subdirs:
     output: "videos"
     raster_images: "raster_images"
