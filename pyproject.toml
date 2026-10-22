@@ -1,0 +1,11 @@
+[project]
+name = "rubiks-sim"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "av>=17.1.0",
+    "manimgl",
+]
+
+[tool.uv.sources]
+manimgl = { git = "https://github.com/3b1b/manim.git", rev = "fafa083a4fb274bba9cabde0b6e2f50ba6da0622" }
