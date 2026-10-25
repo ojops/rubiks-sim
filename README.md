@@ -41,14 +41,14 @@ uv sync --locked
 Render the `RubiksCubeTest` scene from the repository root:
 
 ```bash
-uv run manimgl src/rubiks_sim/cube.py RubiksCubeTest -w
+uv run manimgl src/rubiks_sim/sim.py RubiksCubeTest -w
 ```
 
 Alternatively, run from the source directory:
 
 ```bash
 cd src/rubiks_sim
-uv run manimgl cube.py RubiksCubeTest -w
+uv run manimgl sim.py RubiksCubeTest -w
 ```
 
 Rendered videos are saved in the repository's `videos/` directory.
@@ -60,6 +60,7 @@ rubiks-sim/
 ├── src/
 │   └── rubiks_sim/
 │       ├── cube.py
+│       ├── sim.py
 │       ├── solver.py
 │       └── custom_config.yml
 ├── videos/
