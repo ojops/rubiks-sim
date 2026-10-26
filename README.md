@@ -73,15 +73,11 @@ The project is being developed incrementally, with an emphasis on correctness, e
 ```text
 rubiks-sim/
 ├── src/
-│   └── rubiks_sim/
-│       ├── cube.py
-│       ├── sim.py
-│       ├── solver.py
-│       └── custom_config.yml
-├── videos/
-├── custom_config.yml
-├── pyproject.toml
-├── uv.lock
+│   └── rubiks_sim/   # Cube representation, simulation, and solver
+├── tests/            # Automated tests
+├── videos/           # Generated visualisations
+├── pyproject.toml    # Project metadata and dependencies
+├── uv.lock           # Locked dependency versions
 ├── .gitignore
 ├── LICENSE
 └── README.md
