@@ -1,7 +1,7 @@
 [project]
 name = "rubiks-sim"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = "==3.10.*"
 dependencies = [
     "av>=17.1.0",
     "manimgl",
