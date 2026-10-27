@@ -93,6 +93,12 @@ uv add package-name
 
 Commit changes to both `pyproject.toml` and `uv.lock` when dependencies change.
 
+Run automated tests with:
+
+```bash
+uv run pytest
+```
+
 ## License
 
 See [LICENSE](LICENSE) for details.
