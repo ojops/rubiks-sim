@@ -220,6 +220,18 @@ class RubiksCube:
         )
 
 
+    def is_solved(self):
+        """Return whether the cube is in its solved state"""
+        
+        for face, normal in self.FACE_NORMALS.items():
+            mask = np.all(self.normals == normal, axis=1)
+
+            if not np.all(self.colours[mask] == self.FACE_COLOURS[face]):
+                return False
+
+        return True
+
+
     def apply_singmaster(self, singmaster):
         """
         Apply a sequence of Singmaster moves

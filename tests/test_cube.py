@@ -1,4 +1,3 @@
-
 import numpy as np
 import pytest
 
@@ -241,3 +240,13 @@ def test_non_string_move_raises_type_error(cube):
     """Non string move notation should raise TypeError"""
     with pytest.raises(TypeError):
         cube.move(123)
+
+def test_is_solved():
+    """A newly initialised cube should be solved"""
+    cube = RubiksCube()
+
+    assert cube.is_solved()
+
+    cube.apply_singmaster("R U R' U'")
+
+    assert not cube.is_solved()
