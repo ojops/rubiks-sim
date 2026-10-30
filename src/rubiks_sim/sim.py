@@ -2,6 +2,7 @@ import numpy as np
 from manimlib import *
 
 from rubiks_sim.cube import RubiksCube
+from rubiks_sim.scramble import generate_scramble
 
 
 STICKER_COLOURS = {
@@ -24,7 +25,7 @@ FACE_ROTATIONS = {
 }
 
 CUBIE_SIZE = 0.96
-STICKER_SIZE = 0.86
+STICKER_SIZE = 0.88
 STICKER_OFFSET = CUBIE_SIZE / 2 + 0.01
 
 
@@ -113,16 +114,18 @@ class AnimatedRubiksCube(InteractiveScene):
 
         self.wait()
 
-        # Demonstrate some moves
-        self.animate_move("R")
-        self.animate_move("U")
-        self.animate_move("R'")
-        self.animate_move("U'")
+        # Generate a random scramble
+        scramble = generate_scramble(length=20, seed=42)
+
+        print("Scramble:", " ".join(scramble))
+
+        # Animate the scramble
+        self.animate_moves(scramble, run_time=0.3)
 
         self.wait()
 
-    def animate_move(self, notation):
-        """Animate a single move of the Rubik's Cube"""
+    def animate_move(self, notation, run_time=0.6):
+        """Animate a single singmaster move"""
 
         face = notation[0]
         axis, sign = self.cube.FACE_AXES[face]
@@ -167,7 +170,8 @@ class AnimatedRubiksCube(InteractiveScene):
                 axis=rotation_axis,
                 about_point=ORIGIN,
             ),
-            run_time=0.6,
+            run_time=run_time*abs(turns),
+            rate_func=smooth,
         )
 
         # Update the mathematical cube
@@ -199,3 +203,9 @@ class AnimatedRubiksCube(InteractiveScene):
 
                 sticker.become(updated_sticker)
                 sticker.apply_depth_test()
+
+    def animate_moves(self, moves, run_time=0.6):
+        """Animate a sequence of singmaster moves consistently"""
+
+        for move in moves:
+            self.animate_move(move, run_time=run_time)
