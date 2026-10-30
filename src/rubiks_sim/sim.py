@@ -13,8 +13,7 @@ STICKER_COLOURS = {
     "O": ORANGE,
 }
 
-# Each rotation turns a square from its default XY plane
-# so that it faces the required direction
+# Rotate each square so it faces the correct direction
 FACE_ROTATIONS = {
     (0, 0, 1): (0, OUT),
     (0, 0, -1): (PI, RIGHT),
@@ -24,12 +23,17 @@ FACE_ROTATIONS = {
     (-1, 0, 0): (-PI / 2, UP),
 }
 
+CUBIE_SIZE = 0.96
+STICKER_SIZE = 0.86
+STICKER_OFFSET = CUBIE_SIZE / 2 + 0.01
+
 
 def create_sticker(position, normal, colour):
-    """Create one coloured square at a cube sticker's position"""
+    """Create a coloured square on one face of a cubie"""
+
     sticker = Square(
-        side_length=0.94,
-        stroke_color=STICKER_COLOURS[str(colour)],
+        side_length=STICKER_SIZE,
+        stroke_color=BLACK,
         stroke_width=1.5,
     )
 
@@ -40,10 +44,8 @@ def create_sticker(position, normal, colour):
 
     sticker.rotate(angle, axis=axis)
 
-    # Position the sticker just outside the cube's surface
-    sticker.move_to(
-        position + (0.5 + (1 - 0.94) / 1.414) * normal
-    )
+    # Position the sticker just outside the cubie
+    sticker.move_to(position + STICKER_OFFSET * normal)
 
     return sticker
 
@@ -53,51 +55,79 @@ class AnimatedRubiksCube(InteractiveScene):
     def construct(self):
         self.cube = RubiksCube()
 
-        # Set the camera angle
         self.frame.reorient(
             theta_degrees=-45,
             phi_degrees=70,
         )
 
-        # Create the black cube body
-        self.body = Cube(side_length=3)
-        self.body.set_color(BLACK)
-        self.body.set_opacity(1)
-        self.body.apply_depth_test()
+        self.cubies = []
 
-        # Create the 54 stickers from the logical cube
-        self.stickers = [
-            create_sticker(position, normal, colour)
-            for position, normal, colour in zip(
-                self.cube.positions,
-                self.cube.normals,
-                self.cube.colours,
-            )
-        ]
+        # Create all 27 cubies
+        for x in (-1, 0, 1):
+            for y in (-1, 0, 1):
+                for z in (-1, 0, 1):
 
-        # Add depth testing so stickers on the rear faces
-        # are hidden when they should be
-        for sticker in self.stickers:
-            sticker.apply_depth_test()
+                    position = np.array([x, y, z])
 
-        self.add(self.body, *self.stickers)
+                    # Find all stickers belonging to this cubie
+                    sticker_indices = np.flatnonzero(
+                        np.all(self.cube.positions == position, axis=1)
+                    )
+
+                    # Create the black body of the cubie
+                    body = Cube(side_length=CUBIE_SIZE)
+                    body.set_color(BLACK)
+                    body.set_opacity(1)
+                    body.move_to(position)
+                    body.apply_depth_test()
+
+                    # Create its coloured stickers
+                    stickers = []
+
+                    for i in sticker_indices:
+                        sticker = create_sticker(
+                            position,
+                            self.cube.normals[i],
+                            self.cube.colours[i],
+                        )
+
+                        sticker.apply_depth_test()
+                        stickers.append(sticker)
+
+                    # Group the body and its stickers together
+                    cubie_group = Group(body, *stickers)
+
+                    self.cubies.append({
+                        "position": position,
+                        "indices": sticker_indices,
+                        "body": body,
+                        "stickers": stickers,
+                        "group": cubie_group,
+                    })
+
+        # Add all 27 cubies to the scene
+        self.add(*[
+            cubie["group"]
+            for cubie in self.cubies
+        ])
 
         self.wait()
 
-        # Demonstrated moves
+        # Demonstrate some moves
         self.animate_move("R")
+        self.animate_move("U")
         self.animate_move("R'")
+        self.animate_move("U'")
 
         self.wait()
 
     def animate_move(self, notation):
-        """Animate a single move and update the logical cube"""
+        """Animate a single move of the Rubik's Cube"""
 
-        # Determine which face is being turned
         face = notation[0]
         axis, sign = self.cube.FACE_AXES[face]
 
-        # Determine how many quarter turns are required
+        # Determine the number and direction of quarter turns
         if notation.endswith("'"):
             turns = -1
         elif notation.endswith("2"):
@@ -105,23 +135,31 @@ class AnimatedRubiksCube(InteractiveScene):
         else:
             turns = 1
 
-        # Calculate the direction and angle of rotation
         quarter_turns = -sign * turns
         angle = quarter_turns * PI / 2
 
-        # Find all stickers on the layer being turned
-        mask = self.cube.positions[:, axis] == sign
+        # Select the nine cubies belonging to the relevant layer
+        layer_cubies = []
 
-        layer = VGroup(*[
-            sticker
-            for sticker, selected in zip(self.stickers, mask)
-            if selected
-        ])
+        for cubie in self.cubies:
 
-        # Convert the axis number (0, 1, 2) into an x, y or z vector
+            # The central core has no stickers and never moves
+            if len(cubie["indices"]) == 0:
+                continue
+
+            # All stickers on a cubie share the same position
+            sticker_index = cubie["indices"][0]
+            position = self.cube.positions[sticker_index]
+
+            if position[axis] == sign:
+                layer_cubies.append(cubie["group"])
+
+        layer = Group(*layer_cubies)
+
+        # Convert the axis index into an x, y or z vector
         rotation_axis = np.eye(3)[axis]
 
-        # Animate the layer rotation
+        # Animate the nine cubies together
         self.play(
             Rotate(
                 layer,
@@ -132,21 +170,32 @@ class AnimatedRubiksCube(InteractiveScene):
             run_time=0.6,
         )
 
-        # Update the logical cube to reflect the move
+        # Update the mathematical cube
         self.cube.move(notation)
 
-        # Snap the visual stickers to their exact new positions
-        # to prevent small floating point errors accumulating
-        for i, (sticker, position, normal) in enumerate(zip(
-            self.stickers,
-            self.cube.positions,
-            self.cube.normals,
-        )):
-            updated_sticker = create_sticker(
-                position,
-                normal,
-                self.cube.colours[i],
-            )
+        # Synchronise the visual cubies with the mathematical model
+        for cubie in self.cubies:
 
-            sticker.become(updated_sticker)
-            sticker.apply_depth_test()
+            indices = cubie["indices"]
+
+            if len(indices) == 0:
+                continue
+
+            # All stickers belonging to this cubie have the same
+            # updated position, so we only need the first one
+            new_position = self.cube.positions[indices[0]].astype(float)
+
+            # Move the cubie's black body to its new position
+            cubie["body"].move_to(new_position)
+
+            # Reposition and reorient each coloured sticker
+            for sticker, i in zip(cubie["stickers"], indices):
+
+                updated_sticker = create_sticker(
+                    new_position,
+                    self.cube.normals[i],
+                    self.cube.colours[i],
+                )
+
+                sticker.become(updated_sticker)
+                sticker.apply_depth_test()
