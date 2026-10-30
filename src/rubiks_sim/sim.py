@@ -29,7 +29,6 @@ def create_sticker(position, normal, colour):
     """Create one coloured square at a cube sticker's position"""
     sticker = Square(
         side_length=0.94,
-        #stroke_color=BLACK,
         stroke_color=STICKER_COLOURS[str(colour)],
         stroke_width=1.5,
     )
@@ -41,39 +40,115 @@ def create_sticker(position, normal, colour):
 
     sticker.rotate(angle, axis=axis)
 
-    # Move the sticker just outside the cube's surface
-    sticker.move_to(position + (0.5 + (1 - 0.94) / 1.414) * normal)
+    # Position the sticker just outside the cube's surface
+    sticker.move_to(
+        position + (0.5 + (1 - 0.94) / 1.414) * normal
+    )
 
     return sticker
 
 
-class StaticRubiksCube(InteractiveScene):
-    def construct(self):
-        cube = RubiksCube()
+class AnimatedRubiksCube(InteractiveScene):
 
-        # Give the camera a side on view of the cube
+    def construct(self):
+        self.cube = RubiksCube()
+
+        # Set the camera angle
         self.frame.reorient(
             theta_degrees=-45,
             phi_degrees=70,
         )
 
-        body = Cube(side_length=3)
-        body.set_color(BLACK)
-        body.set_opacity(1)
-        #body.apply_depth_test()
+        # Create the black cube body
+        self.body = Cube(side_length=3)
+        self.body.set_color(BLACK)
+        self.body.set_opacity(1)
+        self.body.apply_depth_test()
 
-        stickers = [
+        # Create the 54 stickers from the logical cube
+        self.stickers = [
             create_sticker(position, normal, colour)
             for position, normal, colour in zip(
-                cube.positions,
-                cube.normals,
-                cube.colours,
+                self.cube.positions,
+                self.cube.normals,
+                self.cube.colours,
             )
         ]
-        
-        for sticker in stickers:
+
+        # Add depth testing so stickers on the rear faces
+        # are hidden when they should be
+        for sticker in self.stickers:
             sticker.apply_depth_test()
 
-        #self.add(body)
-        self.add(*stickers)
+        self.add(self.body, *self.stickers)
+
         self.wait()
+
+        # Demonstrated moves
+        self.animate_move("R")
+        self.animate_move("U")
+        self.animate_move("R'")
+        self.animate_move("U'")
+
+        self.wait()
+
+    def animate_move(self, notation):
+        """Animate a single move and update the logical cube"""
+
+        # Determine which face is being turned
+        face = notation[0]
+        axis, sign = self.cube.FACE_AXES[face]
+
+        # Determine how many quarter turns are required
+        if notation.endswith("'"):
+            turns = 3
+        elif notation.endswith("2"):
+            turns = 2
+        else:
+            turns = 1
+
+        # Calculate the direction and angle of rotation
+        quarter_turns = -sign * turns
+        angle = quarter_turns * PI / 2
+
+        # Find all stickers on the layer being turned
+        mask = self.cube.positions[:, axis] == sign
+
+        layer = VGroup(*[
+            sticker
+            for sticker, selected in zip(self.stickers, mask)
+            if selected
+        ])
+
+        # Convert the axis number (0, 1, 2) into an x, y or z vector
+        rotation_axis = np.eye(3)[axis]
+
+        # Animate the layer rotation
+        self.play(
+            Rotate(
+                layer,
+                angle=angle,
+                axis=rotation_axis,
+                about_point=ORIGIN,
+            ),
+            run_time=0.6,
+        )
+
+        # Update the logical cube to reflect the move
+        self.cube.move(notation)
+
+        # Snap the visual stickers to their exact new positions
+        # to prevent small floating point errors accumulating
+        for i, (sticker, position, normal) in enumerate(zip(
+            self.stickers,
+            self.cube.positions,
+            self.cube.normals,
+        )):
+            updated_sticker = create_sticker(
+                position,
+                normal,
+                self.cube.colours[i],
+            )
+
+            sticker.become(updated_sticker)
+            sticker.apply_depth_test()
