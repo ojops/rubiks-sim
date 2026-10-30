@@ -182,7 +182,7 @@ class RubiksCube:
         face = notation[0]
 
         if notation.endswith("'"):
-            turns = 3
+            turns = -1
         elif notation.endswith("2"):
             turns = 2
         else:

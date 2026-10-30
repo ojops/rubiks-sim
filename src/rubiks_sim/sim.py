@@ -86,9 +86,7 @@ class AnimatedRubiksCube(InteractiveScene):
 
         # Demonstrated moves
         self.animate_move("R")
-        self.animate_move("U")
         self.animate_move("R'")
-        self.animate_move("U'")
 
         self.wait()
 
@@ -101,7 +99,7 @@ class AnimatedRubiksCube(InteractiveScene):
 
         # Determine how many quarter turns are required
         if notation.endswith("'"):
-            turns = 3
+            turns = -1
         elif notation.endswith("2"):
             turns = 2
         else:
