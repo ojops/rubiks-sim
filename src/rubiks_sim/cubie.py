@@ -2,7 +2,6 @@
 class CubieState:
     """
     Represents a rubik's cube using corner and edge pieces
-
     Corner and edge positions follow a fixed ordering
     Permutation identifies which piece occupies each position
     Orientation describes how each piece is rotated
@@ -56,6 +55,55 @@ class CubieState:
         "B": "B",
         "R": "R",
         "L": "O",
+    }
+
+    MOVE_TABLES = {
+        # Each entry:
+        # corner permutation, corner orientation, edge permutation, and edge orientation
+        # Permutation tells us which old position supplies each new position
+        # Orientation gives the change at each new position
+
+        "U": (
+            (3, 0, 1, 2, 4, 5, 6, 7),
+            (0, 0, 0, 0, 0, 0, 0, 0),
+            (3, 0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11),
+            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        ),
+
+        "D": (
+            (0, 1, 2, 3, 5, 6, 7, 4),
+            (0, 0, 0, 0, 0, 0, 0, 0),
+            (0, 1, 2, 3, 5, 6, 7, 4, 8, 9, 10, 11),
+            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        ),
+
+        "F": (
+            (1, 5, 2, 3, 0, 4, 6, 7),
+            (1, 2, 0, 0, 2, 1, 0, 0),
+            (0, 9, 2, 3, 4, 8, 6, 7, 1, 5, 10, 11),
+            (0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0),
+        ),
+
+        "B": (
+            (0, 1, 3, 7, 4, 5, 2, 6),
+            (0, 0, 1, 2, 0, 0, 2, 1),
+            (0, 1, 2, 11, 4, 5, 6, 10, 8, 9, 3, 7),
+            (0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1),
+        ),
+
+        "R": (
+            (4, 1, 2, 0, 7, 5, 6, 3),
+            (2, 0, 0, 1, 1, 0, 0, 2),
+            (8, 1, 2, 3, 11, 5, 6, 7, 4, 9, 10, 0),
+            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        ),
+
+        "L": (
+            (0, 2, 6, 3, 4, 1, 5, 7),
+            (0, 1, 2, 0, 0, 2, 1, 0),
+            (0, 1, 10, 3, 4, 5, 9, 7, 8, 2, 6, 11),
+            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        ),
     }
 
     def __init__(
@@ -241,3 +289,68 @@ class CubieState:
             f"edge_permutation={self.edge_permutation}, "
             f"edge_orientation={self.edge_orientation})"
         )
+
+    def _apply_quarter_turn(self, face):
+        corner_perm, corner_delta, edge_perm, edge_delta = (
+            self.MOVE_TABLES[face]
+        )
+
+        old_corner_permutation = self.corner_permutation
+        old_corner_orientation = self.corner_orientation
+
+        old_edge_permutation = self.edge_permutation
+        old_edge_orientation = self.edge_orientation
+
+        self.corner_permutation = [
+            old_corner_permutation[source]
+            for source in corner_perm
+        ]
+
+        self.corner_orientation = [
+            (old_corner_orientation[source] + delta) % 3
+            for source, delta in zip(corner_perm, corner_delta)
+        ]
+
+        self.edge_permutation = [
+            old_edge_permutation[source]
+            for source in edge_perm
+        ]
+
+        self.edge_orientation = [
+            (old_edge_orientation[source] + delta) % 2
+            for source, delta in zip(edge_perm, edge_delta)
+        ]
+
+    def apply_move(self, move):
+        """Apply one singmaster move to the cubie state"""
+
+        if not isinstance(move, str):
+            raise TypeError("Move notation must be a string")
+
+        if move not in {
+            f + suffix
+            for f in self.MOVE_TABLES
+            for suffix in ("", "'", "2")
+        }:
+            raise ValueError(f"Invalid move: {move}")
+
+        face = move[0]
+
+        if move.endswith("2"):
+            turns = 2
+        elif move.endswith("'"):
+            turns = 3
+        else:
+            turns = 1
+
+        for _ in range(turns):
+            self._apply_quarter_turn(face)
+
+    def apply_moves(self, moves):
+        """Apply a sequence of singmaster moves"""
+
+        if isinstance(moves, str):
+            moves = moves.split()
+
+        for move in moves:
+            self.apply_move(move)
