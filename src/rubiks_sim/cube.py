@@ -235,18 +235,21 @@ class RubiksCube:
     def apply_singmaster(self, singmaster):
         """
         Apply a sequence of Singmaster moves
-
-        Accepts either:
-            "R U R' U'"
-        or:
-            ["R", "U", "R'", "U'"]
+        Accepts a string or a list of moves
         """
 
         if isinstance(singmaster, str):
             moves = singmaster.split()
-
         else:
-            moves = singmaster
+            moves = list(singmaster)
+
+        invalid_moves = [
+            move for move in moves
+            if move not in self.VALID_MOVES
+        ]
+
+        if invalid_moves:
+            raise ValueError(f"Invalid moves: {invalid_moves}")
 
         for move in moves:
             self.move(move)
