@@ -117,6 +117,7 @@ def ida_star(state, max_depth=10):
             )
 
             if result is True:
+                state.apply_move(inverse_move(move))
                 return True
 
             path.pop()

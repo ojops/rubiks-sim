@@ -46,3 +46,21 @@ def test_heuristic_does_not_overestimate_one_move():
         state.apply_move(move)
 
         assert heuristic(state) <= 1
+
+def test_ida_star_does_not_modify_input_state():
+    state = CubieState()
+    state.apply_moves(["R", "U", "F"])
+
+    original_state = CubieState(
+        corner_permutation=state.corner_permutation,
+        corner_orientation=state.corner_orientation,
+        edge_permutation=state.edge_permutation,
+        edge_orientation=state.edge_orientation,
+    )
+
+    ida_star(state, max_depth=8)
+
+    assert state.corner_permutation == original_state.corner_permutation
+    assert state.corner_orientation == original_state.corner_orientation
+    assert state.edge_permutation == original_state.edge_permutation
+    assert state.edge_orientation == original_state.edge_orientation
