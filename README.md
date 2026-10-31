@@ -60,11 +60,10 @@ The project is being developed incrementally, with an emphasis on correctness, e
 
 ### Planned
 
-- **Testing:** Add automated tests for cube state integrity, move operations, and move sequences.
-- **State validation:** Implement checks for cube state consistency and move correctness.
-- **Scrambling:** Generate random cube scrambles using standard move notation.
-- **Visualisation:** Connect the cube representation to ManimGL for 3D rendering and animation.
-- **Solving:** Develop and evaluate an efficient cube-solving algorithm.
+- **Testing:** Add automated tests for solver.py.
+- **Scrambling:** Alter random scramble generation to produce more official scrambles.
+- **Visualisation:** Add terminal actions to interact with cube and improve appearance.
+- **Solving:** Develop and evaluate an efficient cube solving algorithm.
 - **Performance:** Benchmark state manipulation and solving performance as the project develops.
 
 
