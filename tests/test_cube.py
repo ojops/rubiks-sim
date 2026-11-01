@@ -39,9 +39,7 @@ def test_stickers_have_unique_position_and_normal_pairs(cube):
 def test_stickers_are_on_cube_surface(cube):
     """Every sticker should lie on the surface of the cube"""
 
-    assert np.all(
-        np.max(np.abs(cube.positions), axis=1) == 1
-    )
+    assert np.all(np.max(np.abs(cube.positions), axis=1) == 1)
 
 
 def test_r_move_only_affects_right_layer(cube):
@@ -240,6 +238,7 @@ def test_non_string_move_raises_type_error(cube):
     """Non string move notation should raise TypeError"""
     with pytest.raises(TypeError):
         cube.move(123)
+
 
 def test_is_solved():
     """A newly initialised cube should be solved"""

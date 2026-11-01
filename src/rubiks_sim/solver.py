@@ -1,13 +1,8 @@
 from math import ceil
 
-
 FACES = ("U", "D", "F", "B", "R", "L")
 
-MOVES = tuple(
-    face + suffix
-    for face in FACES
-    for suffix in ("", "'", "2")
-)
+MOVES = tuple(face + suffix for face in FACES for suffix in ("", "'", "2"))
 
 OPPOSITE_FACES = {
     "U": "D",
@@ -18,10 +13,7 @@ OPPOSITE_FACES = {
     "L": "R",
 }
 
-FACE_ORDER = {
-    face: index
-    for index, face in enumerate(FACES)
-}
+FACE_ORDER = {face: index for index, face in enumerate(FACES)}
 
 
 def heuristic(state):
@@ -30,24 +22,16 @@ def heuristic(state):
     """
 
     misplaced_corners = sum(
-        piece != position
-        for position, piece in enumerate(state.corner_permutation)
+        piece != position for position, piece in enumerate(state.corner_permutation)
     )
 
     misplaced_edges = sum(
-        piece != position
-        for position, piece in enumerate(state.edge_permutation)
+        piece != position for position, piece in enumerate(state.edge_permutation)
     )
 
-    twisted_corners = sum(
-        orientation != 0
-        for orientation in state.corner_orientation
-    )
+    twisted_corners = sum(orientation != 0 for orientation in state.corner_orientation)
 
-    flipped_edges = sum(
-        orientation != 0
-        for orientation in state.edge_orientation
-    )
+    flipped_edges = sum(orientation != 0 for orientation in state.edge_orientation)
 
     return max(
         ceil(misplaced_corners / 4),

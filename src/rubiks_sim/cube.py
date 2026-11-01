@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class RubiksCube:
     """
     A 3x3 Rubik's Cube represented by 54 stickers
@@ -46,19 +47,31 @@ class RubiksCube:
         "B": (Z, -1),
     }
 
-    VALID_MOVES = frozenset({
-        "U", "U'", "U2",
-        "D", "D'", "D2",
-        "F", "F'", "F2",
-        "B", "B'", "B2",
-        "R", "R'", "R2",
-        "L", "L'", "L2",
-    })
-
+    VALID_MOVES = frozenset(
+        {
+            "U",
+            "U'",
+            "U2",
+            "D",
+            "D'",
+            "D2",
+            "F",
+            "F'",
+            "F2",
+            "B",
+            "B'",
+            "B2",
+            "R",
+            "R'",
+            "R2",
+            "L",
+            "L'",
+            "L2",
+        }
+    )
 
     def __init__(self):
         self._initialise_solved_cube()
-
 
     def _initialise_solved_cube(self):
         """Create the 54 stickers of a solved cube"""
@@ -70,10 +83,8 @@ class RubiksCube:
         # Each face is defined by its normal and the position of its nine stickers
 
         for face, colour in self.FACE_COLOURS.items():
-
             for row in range(3):
                 for col in range(3):
-
                     # row = 0 is the top
                     # col = 0 is the left
 
@@ -103,24 +114,16 @@ class RubiksCube:
 
         # Convert to numpy arrays
 
-        self.positions = np.array(
-            positions, dtype=np.int8
-        )
+        self.positions = np.array(positions, dtype=np.int8)
 
-        self.normals = np.array(
-            normals, dtype=np.int8
-        )
+        self.normals = np.array(normals, dtype=np.int8)
 
-        self.colours = np.array(
-            colours, dtype="<U1"
-        )
-
+        self.colours = np.array(colours, dtype="<U1")
 
     @classmethod
     def _face_normal(cls, face):
         """Return the outward normal of a face"""
         return cls.FACE_NORMALS[face]
-
 
     @staticmethod
     def _rotation_matrix(axis, quarter_turns):
@@ -134,23 +137,27 @@ class RubiksCube:
         """
 
         rotations = {
-            0: np.array([
-                [1, 0, 0],
-                [0, 0, -1],
-                [0, 1, 0],
-            ]),
-
-            1: np.array([
-                [0, 0, 1],
-                [0, 1, 0],
-                [-1, 0, 0],
-            ]),
-
-            2: np.array([
-                [0, -1, 0],
-                [1, 0, 0],
-                [0, 0, 1],
-            ]),
+            0: np.array(
+                [
+                    [1, 0, 0],
+                    [0, 0, -1],
+                    [0, 1, 0],
+                ]
+            ),
+            1: np.array(
+                [
+                    [0, 0, 1],
+                    [0, 1, 0],
+                    [-1, 0, 0],
+                ]
+            ),
+            2: np.array(
+                [
+                    [0, -1, 0],
+                    [1, 0, 0],
+                    [0, 0, 1],
+                ]
+            ),
         }
 
         matrix = rotations[axis]
@@ -158,10 +165,7 @@ class RubiksCube:
         # Each matrix represents +90 degrees
         # Use powers for 180 and 270 degree rotations
 
-        return np.linalg.matrix_power(
-            matrix, quarter_turns % 4
-        )
-
+        return np.linalg.matrix_power(matrix, quarter_turns % 4)
 
     def move(self, notation):
         """
@@ -188,7 +192,6 @@ class RubiksCube:
         else:
             turns = 1
 
-
         axis, sign = self.FACE_AXES[face]
 
         # Select stickers on the layer being turned
@@ -205,24 +208,17 @@ class RubiksCube:
 
         quarter_turns = -sign * turns
 
-        matrix = self._rotation_matrix(
-            axis, quarter_turns
-        )
+        matrix = self._rotation_matrix(axis, quarter_turns)
 
         # Rotate the selected sticker positions
-        self.positions[mask] = (
-            self.positions[mask] @ matrix.T
-        )
+        self.positions[mask] = self.positions[mask] @ matrix.T
 
         # Rotate their normals as well
-        self.normals[mask] = (
-            self.normals[mask] @ matrix.T
-        )
-
+        self.normals[mask] = self.normals[mask] @ matrix.T
 
     def is_solved(self):
         """Return whether the cube is in its solved state"""
-        
+
         for face, normal in self.FACE_NORMALS.items():
             mask = np.all(self.normals == normal, axis=1)
 
@@ -230,7 +226,6 @@ class RubiksCube:
                 return False
 
         return True
-
 
     def apply_singmaster(self, singmaster):
         """
@@ -243,10 +238,7 @@ class RubiksCube:
         else:
             moves = list(singmaster)
 
-        invalid_moves = [
-            move for move in moves
-            if move not in self.VALID_MOVES
-        ]
+        invalid_moves = [move for move in moves if move not in self.VALID_MOVES]
 
         if invalid_moves:
             raise ValueError(f"Invalid moves: {invalid_moves}")

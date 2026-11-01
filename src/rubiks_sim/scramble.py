@@ -19,10 +19,7 @@ def generate_scramble(length=25, seed=None):
     previous_face = None
 
     for _ in range(length):
-        available_faces = [
-            face for face in faces
-            if face != previous_face
-        ]
+        available_faces = [face for face in faces if face != previous_face]
 
         face = rng.choice(available_faces)
         suffix = rng.choice(suffixes)

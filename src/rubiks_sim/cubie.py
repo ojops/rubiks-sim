@@ -1,4 +1,3 @@
-
 class CubieState:
     """
     Represents a rubik's cube using corner and edge pieces
@@ -62,42 +61,36 @@ class CubieState:
         # corner permutation, corner orientation, edge permutation, and edge orientation
         # Permutation tells us which old position supplies each new position
         # Orientation gives the change at each new position
-
         "U": (
             (3, 0, 1, 2, 4, 5, 6, 7),
             (0, 0, 0, 0, 0, 0, 0, 0),
             (3, 0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11),
             (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
         ),
-
         "D": (
             (0, 1, 2, 3, 5, 6, 7, 4),
             (0, 0, 0, 0, 0, 0, 0, 0),
             (0, 1, 2, 3, 5, 6, 7, 4, 8, 9, 10, 11),
             (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
         ),
-
         "F": (
             (1, 5, 2, 3, 0, 4, 6, 7),
             (1, 2, 0, 0, 2, 1, 0, 0),
             (0, 9, 2, 3, 4, 8, 6, 7, 1, 5, 10, 11),
             (0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0),
         ),
-
         "B": (
             (0, 1, 3, 7, 4, 5, 2, 6),
             (0, 0, 1, 2, 0, 0, 2, 1),
             (0, 1, 2, 11, 4, 5, 6, 10, 8, 9, 3, 7),
             (0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1),
         ),
-
         "R": (
             (4, 1, 2, 0, 7, 5, 6, 3),
             (2, 0, 0, 1, 1, 0, 0, 2),
             (8, 1, 2, 3, 11, 5, 6, 7, 4, 9, 10, 0),
             (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
         ),
-
         "L": (
             (0, 2, 6, 3, 4, 1, 5, 7),
             (0, 1, 2, 0, 0, 2, 1, 0),
@@ -114,27 +107,19 @@ class CubieState:
         edge_orientation=None,
     ):
         self.corner_permutation = (
-            list(range(8))
-            if corner_permutation is None
-            else list(corner_permutation)
+            list(range(8)) if corner_permutation is None else list(corner_permutation)
         )
 
         self.corner_orientation = (
-            [0] * 8
-            if corner_orientation is None
-            else list(corner_orientation)
+            [0] * 8 if corner_orientation is None else list(corner_orientation)
         )
 
         self.edge_permutation = (
-            list(range(12))
-            if edge_permutation is None
-            else list(edge_permutation)
+            list(range(12)) if edge_permutation is None else list(edge_permutation)
         )
 
         self.edge_orientation = (
-            [0] * 12
-            if edge_orientation is None
-            else list(edge_orientation)
+            [0] * 12 if edge_orientation is None else list(edge_orientation)
         )
 
     @classmethod
@@ -144,10 +129,7 @@ class CubieState:
         """
 
         # Convert each sticker normal into its face letter
-        normal_to_face = {
-            normal: face
-            for face, normal in cls.FACE_NORMALS.items()
-        }
+        normal_to_face = {normal: face for face, normal in cls.FACE_NORMALS.items()}
 
         # Group stickers according to their cubie positions
         stickers_by_position = {}
@@ -158,28 +140,18 @@ class CubieState:
             cube.colours,
         ):
             position_key = tuple(int(value) for value in position)
-            face = normal_to_face[
-                tuple(int(value) for value in normal)
-            ]
+            face = normal_to_face[tuple(int(value) for value in normal)]
 
-            stickers_by_position.setdefault(
-                position_key, {}
-            )[face] = str(colour)
+            stickers_by_position.setdefault(position_key, {})[face] = str(colour)
 
         # Map each combination of corner then edge colours to its piece ID
         corner_piece_ids = {
-            frozenset(
-                cls.FACE_COLOURS[face]
-                for face in faces
-            ): piece_id
+            frozenset(cls.FACE_COLOURS[face] for face in faces): piece_id
             for piece_id, faces in enumerate(cls.CORNER_FACES)
         }
 
         edge_piece_ids = {
-            frozenset(
-                cls.FACE_COLOURS[face]
-                for face in faces
-            ): piece_id
+            frozenset(cls.FACE_COLOURS[face] for face in faces): piece_id
             for piece_id, faces in enumerate(cls.EDGE_FACES)
         }
 
@@ -189,39 +161,28 @@ class CubieState:
         for position_faces in cls.CORNER_FACES:
             # Find the sticker colours at given corner position
             position = tuple(
-                sum(cls.FACE_NORMALS[face][axis]
-                    for face in position_faces)
+                sum(cls.FACE_NORMALS[face][axis] for face in position_faces)
                 for axis in range(3)
             )
 
             observed = stickers_by_position[position]
 
             # Identify which corner occupies this position
-            observed_colours = tuple(
-                observed[face]
-                for face in position_faces
-            )
+            observed_colours = tuple(observed[face] for face in position_faces)
 
-            piece_id = corner_piece_ids[
-                frozenset(observed_colours)
-            ]
+            piece_id = corner_piece_ids[frozenset(observed_colours)]
 
             corner_permutation.append(piece_id)
 
             # Find the orientation by comparing cyclic rotations
             piece_faces = cls.CORNER_FACES[piece_id]
-            piece_colours = tuple(
-                cls.FACE_COLOURS[face]
-                for face in piece_faces
-            )
+            piece_colours = tuple(cls.FACE_COLOURS[face] for face in piece_faces)
 
             orientation = next(
                 shift
                 for shift in range(3)
-                if tuple(
-                    piece_colours[(i - shift) % 3]
-                    for i in range(3)
-                ) == observed_colours
+                if tuple(piece_colours[(i - shift) % 3] for i in range(3))
+                == observed_colours
             )
 
             corner_orientation.append(orientation)
@@ -231,29 +192,20 @@ class CubieState:
 
         for position_faces in cls.EDGE_FACES:
             position = tuple(
-                sum(cls.FACE_NORMALS[face][axis]
-                    for face in position_faces)
+                sum(cls.FACE_NORMALS[face][axis] for face in position_faces)
                 for axis in range(3)
             )
 
             observed = stickers_by_position[position]
 
-            observed_colours = tuple(
-                observed[face]
-                for face in position_faces
-            )
+            observed_colours = tuple(observed[face] for face in position_faces)
 
-            piece_id = edge_piece_ids[
-                frozenset(observed_colours)
-            ]
+            piece_id = edge_piece_ids[frozenset(observed_colours)]
 
             edge_permutation.append(piece_id)
 
             piece_faces = cls.EDGE_FACES[piece_id]
-            piece_colours = tuple(
-                cls.FACE_COLOURS[face]
-                for face in piece_faces
-            )
+            piece_colours = tuple(cls.FACE_COLOURS[face] for face in piece_faces)
 
             if observed_colours == piece_colours:
                 orientation = 0
@@ -291,9 +243,7 @@ class CubieState:
         )
 
     def _apply_quarter_turn(self, face):
-        corner_perm, corner_delta, edge_perm, edge_delta = (
-            self.MOVE_TABLES[face]
-        )
+        corner_perm, corner_delta, edge_perm, edge_delta = self.MOVE_TABLES[face]
 
         old_corner_permutation = self.corner_permutation
         old_corner_orientation = self.corner_orientation
@@ -302,8 +252,7 @@ class CubieState:
         old_edge_orientation = self.edge_orientation
 
         self.corner_permutation = [
-            old_corner_permutation[source]
-            for source in corner_perm
+            old_corner_permutation[source] for source in corner_perm
         ]
 
         self.corner_orientation = [
@@ -311,10 +260,7 @@ class CubieState:
             for source, delta in zip(corner_perm, corner_delta)
         ]
 
-        self.edge_permutation = [
-            old_edge_permutation[source]
-            for source in edge_perm
-        ]
+        self.edge_permutation = [old_edge_permutation[source] for source in edge_perm]
 
         self.edge_orientation = [
             (old_edge_orientation[source] + delta) % 2
@@ -328,9 +274,7 @@ class CubieState:
             raise TypeError("Move notation must be a string")
 
         if move not in {
-            f + suffix
-            for f in self.MOVE_TABLES
-            for suffix in ("", "'", "2")
+            f + suffix for f in self.MOVE_TABLES for suffix in ("", "'", "2")
         }:
             raise ValueError(f"Invalid move: {move}")
 

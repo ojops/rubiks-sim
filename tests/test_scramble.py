@@ -1,7 +1,6 @@
 import pytest
 
-from rubiks_sim import cube
-from rubiks_sim import scramble
+from rubiks_sim import cube, scramble
 
 
 def test_default_scramble_has_25_moves():
@@ -31,10 +30,7 @@ def test_no_consecutive_moves_use_same_face():
 
     faces = [move[0] for move in moves]
 
-    assert all(
-        faces[i] != faces[i - 1]
-        for i in range(1, len(faces))
-    )
+    assert all(faces[i] != faces[i - 1] for i in range(1, len(faces)))
 
 
 def test_negative_length_is_rejected():

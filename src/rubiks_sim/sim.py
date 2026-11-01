@@ -1,9 +1,27 @@
 import numpy as np
-from manimlib import *
+from manimlib import (
+    BLACK,
+    BLUE,
+    GREEN,
+    ORANGE,
+    ORIGIN,
+    OUT,
+    PI,
+    RED,
+    RIGHT,
+    UP,
+    WHITE,
+    YELLOW,
+    Cube,
+    Group,
+    InteractiveScene,
+    Rotate,
+    Square,
+    smooth,
+)
 
 from rubiks_sim.cube import RubiksCube
 from rubiks_sim.scramble import generate_scramble
-
 
 STICKER_COLOURS = {
     "W": WHITE,
@@ -52,7 +70,6 @@ def create_sticker(position, normal, colour):
 
 
 class AnimatedRubiksCube(InteractiveScene):
-
     def construct(self):
         self.cube = RubiksCube()
 
@@ -67,7 +84,6 @@ class AnimatedRubiksCube(InteractiveScene):
         for x in (-1, 0, 1):
             for y in (-1, 0, 1):
                 for z in (-1, 0, 1):
-
                     position = np.array([x, y, z])
 
                     # Find all stickers belonging to this cubie
@@ -98,19 +114,18 @@ class AnimatedRubiksCube(InteractiveScene):
                     # Group the body and its stickers together
                     cubie_group = Group(body, *stickers)
 
-                    self.cubies.append({
-                        "position": position,
-                        "indices": sticker_indices,
-                        "body": body,
-                        "stickers": stickers,
-                        "group": cubie_group,
-                    })
+                    self.cubies.append(
+                        {
+                            "position": position,
+                            "indices": sticker_indices,
+                            "body": body,
+                            "stickers": stickers,
+                            "group": cubie_group,
+                        }
+                    )
 
         # Add all 27 cubies to the scene
-        self.add(*[
-            cubie["group"]
-            for cubie in self.cubies
-        ])
+        self.add(*[cubie["group"] for cubie in self.cubies])
 
         self.wait()
 
@@ -145,7 +160,6 @@ class AnimatedRubiksCube(InteractiveScene):
         layer_cubies = []
 
         for cubie in self.cubies:
-
             # The central core has no stickers and never moves
             if len(cubie["indices"]) == 0:
                 continue
@@ -170,7 +184,7 @@ class AnimatedRubiksCube(InteractiveScene):
                 axis=rotation_axis,
                 about_point=ORIGIN,
             ),
-            run_time=run_time*abs(turns),
+            run_time=run_time * abs(turns),
             rate_func=smooth,
         )
 
@@ -179,7 +193,6 @@ class AnimatedRubiksCube(InteractiveScene):
 
         # Synchronise the visual cubies with the mathematical model
         for cubie in self.cubies:
-
             indices = cubie["indices"]
 
             if len(indices) == 0:
@@ -194,7 +207,6 @@ class AnimatedRubiksCube(InteractiveScene):
 
             # Reposition and reorient each coloured sticker
             for sticker, i in zip(cubie["stickers"], indices):
-
                 updated_sticker = create_sticker(
                     new_position,
                     self.cube.normals[i],
