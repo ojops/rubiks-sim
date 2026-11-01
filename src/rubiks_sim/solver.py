@@ -1,8 +1,8 @@
-from math import ceil
+from dataclasses import dataclass
+from math import ceil, isfinite
+from time import perf_counter
 
-FACES = ("U", "D", "F", "B", "R", "L")
-
-MOVES = tuple(face + suffix for face in FACES for suffix in ("", "'", "2"))
+from rubiks_sim.notation import FACES, MOVES
 
 OPPOSITE_FACES = {
     "U": "D",
@@ -51,77 +51,95 @@ def inverse_move(move):
     return move + "'"
 
 
-def ida_star(state, max_depth=10):
-    """
-    Find a solution using Iterative Deepening A*
+@dataclass(frozen=True)
+class SearchResult:
+    solution: tuple[str, ...] | None
+    status: str
+    nodes: int
+    elapsed_seconds: float
+    bound: int
 
-    Returns a list of singmaster moves or None if no solution is found within max_depth
-    """
 
+class _SearchLimit(Exception):
+    pass
+
+
+def solve(state, max_depth=10, *, max_nodes=None, time_limit=None) -> SearchResult:
+    """Run bounded IDA* on a private copy; half turns cost one move.
+
+    Status is solved, depth_limit, node_limit or time_limit. External exceptions
+    (including KeyboardInterrupt) propagate without changing the caller's state.
+    """
+    if type(max_depth) is not int or max_depth < 0:
+        raise ValueError("max_depth must be a non-negative integer")
+    if max_nodes is not None and (type(max_nodes) is not int or max_nodes < 0):
+        raise ValueError("max_nodes must be a non-negative integer")
+    if time_limit is not None and (
+        isinstance(time_limit, bool)
+        or not isinstance(time_limit, (int, float))
+        or not isfinite(time_limit)
+        or time_limit < 0
+    ):
+        raise ValueError("time_limit must be finite and non-negative")
+    state = state.copy()
+    started = perf_counter()
     path = []
-    nodes_searched = 0
+    nodes = 0
+    bound = heuristic(state)
 
-    def search(depth, bound, previous_face):
-        nonlocal nodes_searched
+    def finish(status, solution=None):
+        return SearchResult(solution, status, nodes, perf_counter() - started, bound)
 
-        nodes_searched += 1
-
+    def search(depth, previous_face):
+        nonlocal nodes
+        if max_nodes is not None and nodes >= max_nodes:
+            raise _SearchLimit("node_limit")
+        if time_limit is not None and perf_counter() - started >= time_limit:
+            raise _SearchLimit("time_limit")
+        nodes += 1
         estimate = depth + heuristic(state)
-
         if estimate > bound:
             return estimate
-
         if state.is_solved():
             return True
-
         minimum_excess = float("inf")
-
         for move in MOVES:
             face = move[0]
-
-            # Avoid consecutive turns of the same face
             if face == previous_face:
                 continue
-
-            # Opposite faces commute so only explore one ordering
+            # Opposite faces commute: choose one canonical ordering.
             if (
                 previous_face is not None
                 and OPPOSITE_FACES[previous_face] == face
                 and FACE_ORDER[previous_face] > FACE_ORDER[face]
             ):
                 continue
-
             state.apply_move(move)
             path.append(move)
-
-            result = search(
-                depth + 1,
-                bound,
-                face,
-            )
-
-            if result is True:
+            try:
+                result = search(depth + 1, face)
+            finally:
                 state.apply_move(inverse_move(move))
+            if result is True:
                 return True
-
             path.pop()
-            state.apply_move(inverse_move(move))
-
             minimum_excess = min(minimum_excess, result)
-
         return minimum_excess
 
-    bound = heuristic(state)
+    try:
+        while bound <= max_depth:
+            result = search(0, None)
+            if result is True:
+                return finish("solved", tuple(path))
+            if result == float("inf"):
+                break
+            bound = result
+    except _SearchLimit as stop:
+        return finish(str(stop))
+    return finish("depth_limit")
 
-    while bound <= max_depth:
-        result = search(0, bound, None)
 
-        if result is True:
-            return path.copy()
-
-        if result == float("inf"):
-            return None
-
-        bound = result
-
-    return None
+def ida_star(state, max_depth=10):
+    """Compatibility API returning moves or None when the depth limit is exceeded."""
+    result = solve(state, max_depth)
+    return list(result.solution) if result.solution is not None else None

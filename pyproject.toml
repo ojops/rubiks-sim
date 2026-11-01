@@ -2,10 +2,15 @@
 name = "rubiks-sim"
 version = "0.1.0"
 requires-python = "==3.10.*"
-dependencies = [
-    "av>=17.1.0",
-    "manimgl",
-]
+description = "Cube models, bounded IDA* search and optional Manim visualisation"
+readme = "README.md"
+dependencies = ["numpy>=2.2.6,<3"]
+
+[project.optional-dependencies]
+render = ["av>=17.1.0", "manimgl"]
+
+[project.scripts]
+rubiks-sim = "rubiks_sim.main:main"
 
 [tool.uv.sources]
 manimgl = { git = "https://github.com/3b1b/manim.git", rev = "fafa083a4fb274bba9cabde0b6e2f50ba6da0622" }
@@ -17,6 +22,7 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "ruff==0.14.3",
 ]
 
 [tool.hatch.build.targets.wheel]

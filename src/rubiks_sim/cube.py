@@ -1,5 +1,7 @@
 import numpy as np
 
+from rubiks_sim.notation import VALID_MOVES, parse_moves
+
 
 class RubiksCube:
     """
@@ -47,28 +49,7 @@ class RubiksCube:
         "B": (Z, -1),
     }
 
-    VALID_MOVES = frozenset(
-        {
-            "U",
-            "U'",
-            "U2",
-            "D",
-            "D'",
-            "D2",
-            "F",
-            "F'",
-            "F2",
-            "B",
-            "B'",
-            "B2",
-            "R",
-            "R'",
-            "R2",
-            "L",
-            "L'",
-            "L2",
-        }
-    )
+    VALID_MOVES = VALID_MOVES
 
     def __init__(self):
         self._initialise_solved_cube()
@@ -233,15 +214,5 @@ class RubiksCube:
         Accepts a string or a list of moves
         """
 
-        if isinstance(singmaster, str):
-            moves = singmaster.split()
-        else:
-            moves = list(singmaster)
-
-        invalid_moves = [move for move in moves if move not in self.VALID_MOVES]
-
-        if invalid_moves:
-            raise ValueError(f"Invalid moves: {invalid_moves}")
-
-        for move in moves:
+        for move in parse_moves(singmaster):
             self.move(move)

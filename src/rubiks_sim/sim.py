@@ -21,6 +21,7 @@ from manimlib import (
 )
 
 from rubiks_sim.cube import RubiksCube
+from rubiks_sim.notation import parse_moves
 from rubiks_sim.scramble import generate_scramble
 
 STICKER_COLOURS = {
@@ -70,6 +71,8 @@ def create_sticker(position, normal, colour):
 
 
 class AnimatedRubiksCube(InteractiveScene):
+    moves = None
+
     def construct(self):
         self.cube = RubiksCube()
 
@@ -130,7 +133,11 @@ class AnimatedRubiksCube(InteractiveScene):
         self.wait()
 
         # Generate a random scramble
-        scramble = generate_scramble(length=20, seed=42)
+        scramble = (
+            parse_moves(self.moves)
+            if self.moves is not None
+            else generate_scramble(length=20, seed=42)
+        )
 
         print("Scramble:", " ".join(scramble))
 
@@ -142,6 +149,7 @@ class AnimatedRubiksCube(InteractiveScene):
     def animate_move(self, notation, run_time=0.6):
         """Animate a single singmaster move"""
 
+        parse_moves([notation])
         face = notation[0]
         axis, sign = self.cube.FACE_AXES[face]
 
@@ -219,5 +227,5 @@ class AnimatedRubiksCube(InteractiveScene):
     def animate_moves(self, moves, run_time=0.6):
         """Animate a sequence of singmaster moves consistently"""
 
-        for move in moves:
+        for move in parse_moves(moves):
             self.animate_move(move, run_time=run_time)
