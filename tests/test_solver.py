@@ -1,7 +1,7 @@
 import pytest
 
 from rubiks_sim.cubie import CubieState
-from rubiks_sim.solver import ida_star, heuristic
+from rubiks_sim.solver import heuristic, ida_star
 
 
 @pytest.mark.parametrize(
@@ -46,6 +46,7 @@ def test_heuristic_does_not_overestimate_one_move():
         state.apply_move(move)
 
         assert heuristic(state) <= 1
+
 
 def test_ida_star_does_not_modify_input_state():
     state = CubieState()

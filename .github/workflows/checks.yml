@@ -1,0 +1,32 @@
+name: Python checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.23"
+          python-version: "3.10"
+      - run: uv sync --locked
+      - run: uv run --locked ruff check .
+      - run: uv run --locked ruff format --check .
+      - run: uv run --locked pytest
+  render:
+    runs-on: ubuntu-latest
+    env:
+      LIBGL_ALWAYS_SOFTWARE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.23"
+          python-version: "3.10"
+      - run: sudo apt-get update && sudo apt-get install -y pkg-config libcairo2-dev libpango1.0-dev ffmpeg xvfb xauth mesa-vulkan-drivers libegl1 libgl1
+      - run: uv sync --locked --extra render
+      - run: uv run --locked --extra render pytest tests/test_render_validation.py
+      - run: xvfb-run -a uv run --locked --extra render manimgl src/rubiks_sim/sim.py AnimatedRubiksCube -w -r 320x180 --fps 10
+      - run: ffmpeg -v error -i videos/AnimatedRubiksCube.mp4 -f null -

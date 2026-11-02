@@ -1,13 +1,16 @@
-from math import ceil
+"""Bounded IDA* search using the compact cubie representation."""
 
+from __future__ import annotations
 
-FACES = ("U", "D", "F", "B", "R", "L")
+from dataclasses import dataclass
+from math import ceil, isfinite
+from time import perf_counter
+from typing import TYPE_CHECKING
 
-MOVES = tuple(
-    face + suffix
-    for face in FACES
-    for suffix in ("", "'", "2")
-)
+from rubiks_sim.notation import FACES, MOVES
+
+if TYPE_CHECKING:
+    from rubiks_sim.cubie import CubieState
 
 OPPOSITE_FACES = {
     "U": "D",
@@ -18,36 +21,27 @@ OPPOSITE_FACES = {
     "L": "R",
 }
 
-FACE_ORDER = {
-    face: index
-    for index, face in enumerate(FACES)
-}
+FACE_ORDER = {face: index for index, face in enumerate(FACES)}
 
 
-def heuristic(state):
-    """
-    Estimate a lower bound for the number of moves to solve the cube
+def heuristic(state: CubieState) -> int:
+    """Return a lower bound on remaining face turns, counting half turns as one.
+
+    Each move affects at most four corners and four edges. The four counts
+    overlap, so take their maximum rather than their sum.
     """
 
     misplaced_corners = sum(
-        piece != position
-        for position, piece in enumerate(state.corner_permutation)
+        piece != position for position, piece in enumerate(state.corner_permutation)
     )
 
     misplaced_edges = sum(
-        piece != position
-        for position, piece in enumerate(state.edge_permutation)
+        piece != position for position, piece in enumerate(state.edge_permutation)
     )
 
-    twisted_corners = sum(
-        orientation != 0
-        for orientation in state.corner_orientation
-    )
+    twisted_corners = sum(orientation != 0 for orientation in state.corner_orientation)
 
-    flipped_edges = sum(
-        orientation != 0
-        for orientation in state.edge_orientation
-    )
+    flipped_edges = sum(orientation != 0 for orientation in state.edge_orientation)
 
     return max(
         ceil(misplaced_corners / 4),
@@ -57,7 +51,8 @@ def heuristic(state):
     )
 
 
-def inverse_move(move):
+def inverse_move(move: str) -> str:
+    """Return the inverse of an already validated Singmaster move."""
     if move.endswith("2"):
         return move
 
@@ -67,77 +62,112 @@ def inverse_move(move):
     return move + "'"
 
 
-def ida_star(state, max_depth=10):
-    """
-    Find a solution using Iterative Deepening A*
+@dataclass(frozen=True)
+class SearchResult:
+    """Describe a completed or limited search.
 
-    Returns a list of singmaster moves or None if no solution is found within max_depth
+    solution is None unless solved. Nodes include bound cutoffs; elapsed_seconds
+    excludes input copying. bound is the current or next IDA* threshold.
     """
 
+    solution: tuple[str, ...] | None
+    status: str
+    nodes: int
+    elapsed_seconds: float
+    bound: int
+
+
+class _SearchLimit(Exception):
+    pass
+
+
+def solve(
+    state: CubieState,
+    max_depth: int = 10,
+    *,
+    max_nodes: int | None = None,
+    time_limit: float | None = None,
+) -> SearchResult:
+    """Run bounded IDA* on a private copy; half turns cost one move.
+
+    Status is solved, depth_limit, node_limit, or time_limit. Optional budgets
+    count visited nodes and seconds; None leaves that budget unlimited.
+    Invalid limits raise ValueError. External exceptions, including
+    KeyboardInterrupt, propagate without changing the caller's state.
+    """
+    if type(max_depth) is not int or max_depth < 0:
+        raise ValueError("max_depth must be a non-negative integer")
+    if max_nodes is not None and (type(max_nodes) is not int or max_nodes < 0):
+        raise ValueError("max_nodes must be a non-negative integer")
+    if time_limit is not None and (
+        isinstance(time_limit, bool)
+        or not isinstance(time_limit, (int, float))
+        or not isfinite(time_limit)
+        or time_limit < 0
+    ):
+        raise ValueError("time_limit must be finite and non-negative")
+    state = state.copy()
+    started = perf_counter()
     path = []
-    nodes_searched = 0
+    nodes = 0
+    bound = heuristic(state)
 
-    def search(depth, bound, previous_face):
-        nonlocal nodes_searched
+    def finish(status, solution=None):
+        return SearchResult(solution, status, nodes, perf_counter() - started, bound)
 
-        nodes_searched += 1
-
+    def search(depth, previous_face):
+        nonlocal nodes
+        if max_nodes is not None and nodes >= max_nodes:
+            raise _SearchLimit("node_limit")
+        if time_limit is not None and perf_counter() - started >= time_limit:
+            raise _SearchLimit("time_limit")
+        nodes += 1
         estimate = depth + heuristic(state)
-
         if estimate > bound:
             return estimate
-
         if state.is_solved():
             return True
-
         minimum_excess = float("inf")
-
         for move in MOVES:
             face = move[0]
-
-            # Avoid consecutive turns of the same face
             if face == previous_face:
                 continue
-
-            # Opposite faces commute so only explore one ordering
+            # Opposite faces commute: choose one canonical ordering.
             if (
                 previous_face is not None
                 and OPPOSITE_FACES[previous_face] == face
                 and FACE_ORDER[previous_face] > FACE_ORDER[face]
             ):
                 continue
-
             state.apply_move(move)
             path.append(move)
-
-            result = search(
-                depth + 1,
-                bound,
-                face,
-            )
-
-            if result is True:
+            try:
+                result = search(depth + 1, face)
+            finally:
                 state.apply_move(inverse_move(move))
+            if result is True:
                 return True
-
             path.pop()
-            state.apply_move(inverse_move(move))
-
             minimum_excess = min(minimum_excess, result)
-
         return minimum_excess
 
-    bound = heuristic(state)
+    try:
+        while bound <= max_depth:
+            result = search(0, None)
+            if result is True:
+                return finish("solved", tuple(path))
+            if result == float("inf"):
+                break
+            bound = result
+    except _SearchLimit as stop:
+        return finish(str(stop))
+    return finish("depth_limit")
 
-    while bound <= max_depth:
-        result = search(0, bound, None)
 
-        if result is True:
-            return path.copy()
+def ida_star(state: CubieState, max_depth: int = 10) -> list[str] | None:
+    """Return a solution list or None when the depth limit is exceeded.
 
-        if result == float("inf"):
-            return None
-
-        bound = result
-
-    return None
+    Preserve the input state. Use solve() for statistics and node/time budgets.
+    """
+    result = solve(state, max_depth)
+    return list(result.solution) if result.solution is not None else None

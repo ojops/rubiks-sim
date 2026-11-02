@@ -1,9 +1,32 @@
+"""ManimGL scenes driven by the exact sticker model."""
+
+from collections.abc import Iterable
+
 import numpy as np
-from manimlib import *
+from manimlib import (
+    BLACK,
+    BLUE,
+    GREEN,
+    ORANGE,
+    ORIGIN,
+    OUT,
+    PI,
+    RED,
+    RIGHT,
+    UP,
+    WHITE,
+    YELLOW,
+    Cube,
+    Group,
+    InteractiveScene,
+    Rotate,
+    Square,
+    smooth,
+)
 
 from rubiks_sim.cube import RubiksCube
+from rubiks_sim.notation import parse_moves
 from rubiks_sim.scramble import generate_scramble
-
 
 STICKER_COLOURS = {
     "W": WHITE,
@@ -14,7 +37,7 @@ STICKER_COLOURS = {
     "O": ORANGE,
 }
 
-# Rotate each square so it faces the correct direction
+# Map outward normals to the rotations of a square initially facing +Z.
 FACE_ROTATIONS = {
     (0, 0, 1): (0, OUT),
     (0, 0, -1): (PI, RIGHT),
@@ -29,8 +52,8 @@ STICKER_SIZE = 0.88
 STICKER_OFFSET = CUBIE_SIZE / 2 + 0.01
 
 
-def create_sticker(position, normal, colour):
-    """Create a coloured square on one face of a cubie"""
+def create_sticker(position: np.ndarray, normal: np.ndarray, colour: str) -> Square:
+    """Return a coloured square aligned with a cubie's outward normal."""
 
     sticker = Square(
         side_length=STICKER_SIZE,
@@ -45,15 +68,19 @@ def create_sticker(position, normal, colour):
 
     sticker.rotate(angle, axis=axis)
 
-    # Position the sticker just outside the cubie
+    # Offset from the body to prevent overlapping surfaces.
     sticker.move_to(position + STICKER_OFFSET * normal)
 
     return sticker
 
 
 class AnimatedRubiksCube(InteractiveScene):
+    """Animate supplied moves, or a seeded 20-move demonstration by default."""
 
-    def construct(self):
+    moves: str | Iterable[str] | None = None
+
+    def construct(self) -> None:
+        """Build a solved cube and play the selected move sequence."""
         self.cube = RubiksCube()
 
         self.frame.reorient(
@@ -63,26 +90,21 @@ class AnimatedRubiksCube(InteractiveScene):
 
         self.cubies = []
 
-        # Create all 27 cubies
         for x in (-1, 0, 1):
             for y in (-1, 0, 1):
                 for z in (-1, 0, 1):
-
                     position = np.array([x, y, z])
 
-                    # Find all stickers belonging to this cubie
                     sticker_indices = np.flatnonzero(
                         np.all(self.cube.positions == position, axis=1)
                     )
 
-                    # Create the black body of the cubie
                     body = Cube(side_length=CUBIE_SIZE)
                     body.set_color(BLACK)
                     body.set_opacity(1)
                     body.move_to(position)
                     body.apply_depth_test()
 
-                    # Create its coloured stickers
                     stickers = []
 
                     for i in sticker_indices:
@@ -95,42 +117,45 @@ class AnimatedRubiksCube(InteractiveScene):
                         sticker.apply_depth_test()
                         stickers.append(sticker)
 
-                    # Group the body and its stickers together
                     cubie_group = Group(body, *stickers)
 
-                    self.cubies.append({
-                        "position": position,
-                        "indices": sticker_indices,
-                        "body": body,
-                        "stickers": stickers,
-                        "group": cubie_group,
-                    })
+                    self.cubies.append(
+                        {
+                            "position": position,
+                            "indices": sticker_indices,
+                            "body": body,
+                            "stickers": stickers,
+                            "group": cubie_group,
+                        }
+                    )
 
-        # Add all 27 cubies to the scene
-        self.add(*[
-            cubie["group"]
-            for cubie in self.cubies
-        ])
+        self.add(*[cubie["group"] for cubie in self.cubies])
 
         self.wait()
 
-        # Generate a random scramble
-        scramble = generate_scramble(length=20, seed=42)
+        scramble = (
+            parse_moves(self.moves)
+            if self.moves is not None
+            else generate_scramble(length=20, seed=42)
+        )
 
         print("Scramble:", " ".join(scramble))
 
-        # Animate the scramble
         self.animate_moves(scramble, run_time=0.3)
 
         self.wait()
 
-    def animate_move(self, notation, run_time=0.6):
-        """Animate a single singmaster move"""
+    def animate_move(self, notation: str, run_time: float = 0.6) -> None:
+        """Animate one Singmaster move and update the sticker model.
 
+        run_time is seconds per quarter turn; half turns take twice as long.
+        Reject invalid notation before playback starts.
+        """
+
+        parse_moves([notation])
         face = notation[0]
         axis, sign = self.cube.FACE_AXES[face]
 
-        # Determine the number and direction of quarter turns
         if notation.endswith("'"):
             turns = -1
         elif notation.endswith("2"):
@@ -141,16 +166,14 @@ class AnimatedRubiksCube(InteractiveScene):
         quarter_turns = -sign * turns
         angle = quarter_turns * PI / 2
 
-        # Select the nine cubies belonging to the relevant layer
         layer_cubies = []
 
         for cubie in self.cubies:
-
-            # The central core has no stickers and never moves
+            # The central core has no stickers and never moves.
             if len(cubie["indices"]) == 0:
                 continue
 
-            # All stickers on a cubie share the same position
+            # All stickers on a cubie share the same position.
             sticker_index = cubie["indices"][0]
             position = self.cube.positions[sticker_index]
 
@@ -159,10 +182,8 @@ class AnimatedRubiksCube(InteractiveScene):
 
         layer = Group(*layer_cubies)
 
-        # Convert the axis index into an x, y or z vector
         rotation_axis = np.eye(3)[axis]
 
-        # Animate the nine cubies together
         self.play(
             Rotate(
                 layer,
@@ -170,31 +191,25 @@ class AnimatedRubiksCube(InteractiveScene):
                 axis=rotation_axis,
                 about_point=ORIGIN,
             ),
-            run_time=run_time*abs(turns),
+            run_time=run_time * abs(turns),
             rate_func=smooth,
         )
 
-        # Update the mathematical cube
         self.cube.move(notation)
 
-        # Synchronise the visual cubies with the mathematical model
+        # Rebuild sticker geometry from exact coordinates to avoid visual drift.
         for cubie in self.cubies:
-
             indices = cubie["indices"]
 
             if len(indices) == 0:
                 continue
 
-            # All stickers belonging to this cubie have the same
-            # updated position, so we only need the first one
+            # Sticker identities stay attached to cubies after every turn.
             new_position = self.cube.positions[indices[0]].astype(float)
 
-            # Move the cubie's black body to its new position
             cubie["body"].move_to(new_position)
 
-            # Reposition and reorient each coloured sticker
             for sticker, i in zip(cubie["stickers"], indices):
-
                 updated_sticker = create_sticker(
                     new_position,
                     self.cube.normals[i],
@@ -204,8 +219,11 @@ class AnimatedRubiksCube(InteractiveScene):
                 sticker.become(updated_sticker)
                 sticker.apply_depth_test()
 
-    def animate_moves(self, moves, run_time=0.6):
-        """Animate a sequence of singmaster moves consistently"""
+    def animate_moves(self, moves: str | Iterable[str], run_time: float = 0.6) -> None:
+        """Validate the whole sequence, then animate each move in order.
 
-        for move in moves:
+        run_time is seconds per quarter turn, as in animate_move().
+        """
+
+        for move in parse_moves(moves):
             self.animate_move(move, run_time=run_time)
