@@ -1,18 +1,25 @@
+"""Corner and edge states, physical validation, and precomputed face turns."""
+
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
+
 from rubiks_sim.notation import parse_moves
+
+if TYPE_CHECKING:
+    from rubiks_sim.cube import RubiksCube
 
 
 class CubieState:
-    """
-    Represents a rubik's cube using corner and edge pieces
-    Corner and edge positions follow a fixed ordering
-    Permutation identifies which piece occupies each position
-    Orientation describes how each piece is rotated
+    """Represent a cube using eight corners and twelve edges.
+
+    Permutations identify the piece at each position in CORNER_FACES/EDGE_FACES.
+    Orientations record corner twists modulo three and edge flips modulo two.
+    Construction copies the supplied values and rejects unreachable states.
     """
 
-    # Face convention
-    # U = +Y, D = -Y
-    # F = +Z, B = -Z
-    # R = +X, L = -X
+    # Face convention: U/D = ±Y, F/B = ±Z, R/L = ±X.
 
     CORNER_FACES = (
         ("U", "R", "F"),  # URF
@@ -49,7 +56,7 @@ class CubieState:
         "L": (-1, 0, 0),
     }
 
-    # Colours used by existing cube.py
+    # Keep the colour convention aligned with the sticker model.
     FACE_COLOURS = {
         "U": "W",
         "D": "Y",
@@ -60,10 +67,8 @@ class CubieState:
     }
 
     MOVE_TABLES = {
-        # Each entry:
-        # corner permutation, corner orientation, edge permutation, and edge orientation
-        # Permutation tells us which old position supplies each new position
-        # Orientation gives the change at each new position
+        # Entries contain corner sources, corner twists, edge sources, and flips.
+        # Sources refer to old positions; orientation deltas apply at new positions.
         "U": (
             (3, 0, 1, 2, 4, 5, 6, 7),
             (0, 0, 0, 0, 0, 0, 0, 0),
@@ -104,11 +109,11 @@ class CubieState:
 
     def __init__(
         self,
-        corner_permutation=None,
-        corner_orientation=None,
-        edge_permutation=None,
-        edge_orientation=None,
-    ):
+        corner_permutation: Iterable[int] | None = None,
+        corner_orientation: Iterable[int] | None = None,
+        edge_permutation: Iterable[int] | None = None,
+        edge_orientation: Iterable[int] | None = None,
+    ) -> None:
         self.corner_permutation = (
             list(range(8)) if corner_permutation is None else list(corner_permutation)
         )
@@ -126,7 +131,8 @@ class CubieState:
         )
         self.validate()
 
-    def copy(self):
+    def copy(self) -> CubieState:
+        """Return an independent, validated copy of this state."""
         return type(self)(
             self.corner_permutation,
             self.corner_orientation,
@@ -157,9 +163,11 @@ class CubieState:
             raise ValueError("Corner and edge permutation parity must match")
 
     @classmethod
-    def from_cube(cls, cube):
-        """
-        Convert the 54 sticker RubiksCube into a CubieState
+    def from_cube(cls, cube: RubiksCube) -> CubieState:
+        """Convert sticker geometry into a validated cubie state.
+
+        Raise ValueError for invalid geometry, colours, or unreachable pieces.
+        Centre colours must match the fixed face convention.
         """
 
         if (
@@ -168,10 +176,8 @@ class CubieState:
             or cube.colours.shape != (54,)
         ):
             raise ValueError("Expected 54 stickers with 3D positions and normals")
-        # Convert each sticker normal into its face letter
         normal_to_face = {normal: face for face, normal in cls.FACE_NORMALS.items()}
 
-        # Group stickers according to their cubie positions
         stickers_by_position = {}
         seen = set()
 
@@ -196,7 +202,7 @@ class CubieState:
 
             stickers_by_position.setdefault(position_key, {})[face] = str(colour)
 
-        # Map each combination of corner then edge colours to its piece ID
+        # Piece identity depends on colours, regardless of orientation.
         corner_piece_ids = {
             frozenset(cls.FACE_COLOURS[face] for face in faces): piece_id
             for piece_id, faces in enumerate(cls.CORNER_FACES)
@@ -211,7 +217,6 @@ class CubieState:
         corner_orientation = []
 
         for position_faces in cls.CORNER_FACES:
-            # Find the sticker colours at given corner position
             position = tuple(
                 sum(cls.FACE_NORMALS[face][axis] for face in position_faces)
                 for axis in range(3)
@@ -219,7 +224,6 @@ class CubieState:
 
             observed = stickers_by_position[position]
 
-            # Identify which corner occupies this position
             observed_colours = tuple(observed[face] for face in position_faces)
 
             piece_id = corner_piece_ids.get(frozenset(observed_colours))
@@ -228,7 +232,7 @@ class CubieState:
 
             corner_permutation.append(piece_id)
 
-            # Find the orientation by comparing cyclic rotations
+            # Only cyclic rotations preserve a corner's physical handedness.
             piece_faces = cls.CORNER_FACES[piece_id]
             piece_colours = tuple(cls.FACE_COLOURS[face] for face in piece_faces)
 
@@ -284,8 +288,8 @@ class CubieState:
             edge_orientation=edge_orientation,
         )
 
-    def is_solved(self):
-        """Return True if the cube is in its solved state"""
+    def is_solved(self) -> bool:
+        """Return whether every piece is in its solved position and orientation."""
 
         return (
             self.corner_permutation == list(range(8))
@@ -294,7 +298,7 @@ class CubieState:
             and self.edge_orientation == [0] * 12
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"CubieState("
             f"corner_permutation={self.corner_permutation}, "
@@ -303,7 +307,7 @@ class CubieState:
             f"edge_orientation={self.edge_orientation})"
         )
 
-    def _apply_quarter_turn(self, face):
+    def _apply_quarter_turn(self, face: str) -> None:
         self._apply_table(self.MOVE_TABLES[face])
 
     def _apply_table(self, table):
@@ -331,8 +335,8 @@ class CubieState:
             for source, delta in zip(edge_perm, edge_delta)
         ]
 
-    def apply_move(self, move):
-        """Apply one singmaster move to the cubie state"""
+    def apply_move(self, move: str) -> None:
+        """Apply one Singmaster move in place; reject unsupported notation."""
 
         if not isinstance(move, str):
             raise TypeError("Move notation must be a string")
@@ -341,16 +345,21 @@ class CubieState:
             raise ValueError(f"Invalid move: {move}")
         self._apply_table(FULL_MOVE_TABLES[move])
 
-    def apply_moves(self, moves):
-        """Apply a sequence atomically with respect to invalid notation."""
+    def apply_moves(self, moves: str | Iterable[str]) -> None:
+        """Apply a string or iterable of Singmaster moves in place.
+
+        Validate the whole sequence before changing the state.
+        """
         for move in parse_moves(moves):
             self.apply_move(move)
 
 
 def _build_full_move_tables():
+    """Compose quarter turns into all 18 supported move transformations."""
     tables = {}
     for face in CubieState.MOVE_TABLES:
         state = CubieState()
+        # Accumulate one, two, then three quarter turns from the solved state.
         for suffix in ("", "2", "'"):
             state._apply_quarter_turn(face)
             tables[face + suffix] = tuple(

@@ -1,51 +1,28 @@
-# Cube and search notes
+# Cube models and solving
 
-A sticker has an integer position, outward normal and immutable colour. Face
-turns apply a signed 90-degree rotation to positions and normals in one layer.
-Integer matrices avoid accumulated floating-point error in the logical model.
-Visual geometry is synchronised from that exact model after animation.
+## Representations
 
-The compact state stores permutations of eight corners and twelve edges, plus
-corner orientation modulo three and edge orientation modulo two. A reachable
-state requires distinct pieces, corner twists summing to 0 mod 3, edge flips
-summing to 0 mod 2, and equal corner/edge permutation parity. These conditions
-are sufficient for the standard fixed-centre 3x3 cubie convention. Sticker
-conversion additionally checks geometry, unique sticker slots and centre colours.
+`RubiksCube` (`cube.py`) stores 54 stickers with integer positions, outward normals, and colours. Face turns rotate one layer using integer matrices, avoiding floating-point drift. Animation follows this model.
 
-For a move, `new_permutation[i] = old_permutation[source[i]]` and
-`new_orientation[i] = (old_orientation[source[i]] + delta[i]) % modulus`.
-The 18 full transformations are derived once from six quarter-turn tables.
-This replaces repeated validation-set construction and two/three transformations
-for half/inverse turns. Regression checks compare against independent sticker
-geometry along seeded trajectories.
+`CubieState` (`cubie.py`) stores the positions and orientations of eight corners and twelve edges. Precomputed tables apply each of the 18 supported moves in one transformation.
 
-IDA* searches successively larger f=g+h bounds using depth-first search. The
-heuristic is the maximum of ceilings of four misplaced/twisted/flipped piece
-counts divided by four. A move affects at most four corners and four edges,
-so this is admissible; the components overlap, so they must not be added.
-Consecutive same-face turns can be combined. Opposite faces commute, allowing
-one ordering to be pruned. Together these preserve optimality in the face-turn
-metric for completed searches, but do not make deep searches cheap.
+Both models use U/D = ±Y, F/B = ±Z, and R/L = ±X, with white/yellow, green/blue, and red/orange face colours. Conversion checks sticker geometry and fixed centres. Cubie validation checks unique pieces, corner twists summing to 0 modulo 3, edge flips summing to 0 modulo 2, and matching permutation parity.
 
-Search owns a copy. Before every node it checks the optional node/time budgets;
-all visited nodes, including f-bound cutoffs, count toward the budget. Elapsed
-seconds describe search after copying/validation. `bound` reports the current
-or next IDA* bound; it is not a solved-distance guarantee on interrupted search.
-KeyboardInterrupt propagates. Search limits return explicit status and no path.
+## Search
 
-## Before considering a general solver
+`solver.py` uses Iterative Deepening A* (IDA*): depth-first search with an increasing bound on moves used plus estimated moves remaining. Half turns count as one move.
 
-The heuristic never exceeds three on valid states. Small move optimisations
-help constant factors but cannot remove exponential search growth. Next assess
-coordinate pruning: corner orientation has 3^7=2187 states, edge orientation
-2^11=2048, and the middle-slice choice C(12,4)=495. Individual coordinates are
-small; combined tables are larger (e.g. 2187*495=1,082,565). A byte per pruning
-distance would be roughly 1 MiB for that combination, before metadata and move
-tables. Python objects have much greater overhead than packed bytes/arrays.
+The estimate takes the maximum of four counts divided by four and rounded up: misplaced corners, misplaced edges, twisted corners, and flipped edges. One move affects at most four corners and four edges, making this a lower bound. Consecutive same-face turns and duplicate orderings of commuting opposite-face turns are skipped without losing shortest solutions.
 
-A two-phase design also needs coordinate encoders, subgroup transition tables,
-phase-two permutation search, table persistence/versioning and independent
-solution verification. That is a separate algorithmic milestone, not a minor
-extension. Choose between studying optimal IDA* and practical near-optimal
-two-phase solving before implementing the tables. No general-solver speed or
-optimality claim is made for random scrambles here.
+## API and limits
+
+- `ida_star(state, max_depth=10)` returns a solution list or `None`.
+- `solve(state, max_depth=10, max_nodes=None, time_limit=None)` returns a `SearchResult` with the solution, status, visited nodes, elapsed seconds, and search bound.
+
+Both preserve the input by searching a validated copy. Library node/time budgets default to unlimited; the CLI uses 100,000 nodes and five seconds. Nodes include bound cutoffs. Time is measured after copying and checked before each node.
+
+Statuses are `solved`, `depth_limit`, `node_limit`, and `time_limit`. A limit does not mean unsolvability. The reported bound is a search threshold, not a proven distance on interruption. The CLI verifies solutions against the sticker model.
+
+## Limitations
+
+The heuristic never exceeds three, so deep searches remain expensive. Stronger coordinate-based heuristics or a two-phase solver are future work. The current solver is intended for shallow scrambles.

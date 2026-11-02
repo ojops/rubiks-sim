@@ -1,36 +1,20 @@
-# Shared Python coding standard
+# Coding conventions
 
-Use Python 3.10-compatible syntax, four-space indentation, snake_case functions
-and variables, CapWords classes and UPPER_CASE constants. Keep two blank lines
-between module-level definitions; let Ruff format collections, expressions and
-signatures at 88 columns rather than hand-aligning them. Preserve blank lines
-that separate different ideas inside a function, not every statement.
+## Formatting
 
-Use explicit imports grouped as standard library, third party and local modules.
-Rendering now names its Manim imports, making the source of constants/classes
-visible. Avoid unused placeholder imports and modules with no responsibilities.
+Use Python 3.10, four-space indentation, `snake_case` functions and variables, `CapWords` classes, and `UPPER_CASE` constants. Let Ruff handle imports, 88-column wrapping, and spacing between definitions. Use blank lines inside functions to separate ideas.
 
-Use concise imperative docstrings for public behaviour and document units,
-mutation, error behaviour and mathematical assumptions where those matter.
-Comments should explain why, constraints, or conventions; avoid narrating obvious
-assignments. Use ordinary sentences and consistent capitalisation. Do not add
-docstrings or annotations to every trivial test/helper just to satisfy a rule.
+## Documentation
 
-Annotate public boundaries and non-obvious result structures when useful.
-Use small dataclasses for search/backtest results with several related fields;
-retain dictionaries for the existing JSON food format. Nutrition uses Decimal
-because decimal quantities are part of its data contract; financial time-series
-analysis uses binary float and tolerance-based tests. These differences are
-intentional. Do not silently mix them or use Decimal for all scientific work.
+Start docstrings with a short action sentence and a full stop. Explain mutation, returns, units, and errors where useful. Spell `Singmaster`, `NumPy`, and `ManimGL` consistently.
 
-Validate at external boundaries, fail with informative ValueError/TypeError,
-and keep calculation functions independent of printing. CLI argument errors
-produce exit code 2. Never silently fill unknown food nutrients, market prices
-or unsupported cube state. A bounded-search failure is not proof of unsolvability.
+Annotate public function parameters and return types. Move sequences use `str | Iterable[str]`. Internal helpers and tests need extra documentation only when it clarifies behaviour.
 
-Tooling is shared: Ruff 0.14.3, Python target py310, 88 columns, import sorting,
-syntax/undefined-name/unused-code checks (E4/E7/E9/F/I). There is no mandatory
-all-annotations policy, docstring linter, broad rewrite or new type-checking gate.
+Keep comments focused on coordinate conventions, orientations, search pruning, and graphics synchronisation. Avoid narrating obvious assignments.
+
+## Behaviour and checks
+
+Validate whole move sequences before mutation or playback. Keep solving independent of printing and graphics. Treat search limits as incomplete searches, not unsolvable cubes.
 
 ```bash
 uv run ruff check .
@@ -38,5 +22,4 @@ uv run ruff format --check .
 uv run pytest
 ```
 
-Formatting/import cleanup was committed separately before behavioural work.
-Keep future formatting changes separate from correctness/algorithm commits too.
+Keep documentation and formatting separate from algorithm changes where practical. There is no mandatory type-checking or docstring-linting gate.

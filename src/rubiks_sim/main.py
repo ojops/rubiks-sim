@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from collections.abc import Sequence
 from dataclasses import asdict
 from pathlib import Path
 
@@ -18,7 +19,12 @@ from rubiks_sim.scramble import generate_scramble
 from rubiks_sim.solver import solve
 
 
-def main(argv=None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run the CLI and return 0 on success or 1 when search reaches a limit.
+
+    Read arguments from sys.argv when argv is None. Invalid arguments and
+    handled setup/rendering errors raise SystemExit with code 2 via argparse.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     source = parser.add_mutually_exclusive_group()
     source.add_argument("--scramble", default="", help="Space-separated face turns")
@@ -71,8 +77,12 @@ def main(argv=None) -> int:
         parser.error(str(error))
 
 
-def render(moves: list[str], output_dir: Path, *, low_quality=False) -> None:
-    """Render in a subprocess so Manim receives only its own CLI arguments."""
+def render(moves: list[str], output_dir: Path, *, low_quality: bool = False) -> None:
+    """Render validated moves to output_dir using a separate ManimGL process.
+
+    Use Xvfb on Linux without a display. Missing setup raises ValueError;
+    process launch or rendering failures propagate as subprocess/OS errors.
+    """
     if importlib.util.find_spec("manimlib") is None:
         raise ValueError("Rendering requires: uv sync --extra render")
     with tempfile.TemporaryDirectory(prefix="rubiks-scene-") as directory:

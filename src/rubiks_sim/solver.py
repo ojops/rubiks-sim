@@ -1,8 +1,16 @@
+"""Bounded IDA* search using the compact cubie representation."""
+
+from __future__ import annotations
+
 from dataclasses import dataclass
 from math import ceil, isfinite
 from time import perf_counter
+from typing import TYPE_CHECKING
 
 from rubiks_sim.notation import FACES, MOVES
+
+if TYPE_CHECKING:
+    from rubiks_sim.cubie import CubieState
 
 OPPOSITE_FACES = {
     "U": "D",
@@ -16,9 +24,11 @@ OPPOSITE_FACES = {
 FACE_ORDER = {face: index for index, face in enumerate(FACES)}
 
 
-def heuristic(state):
-    """
-    Estimate a lower bound for the number of moves to solve the cube
+def heuristic(state: CubieState) -> int:
+    """Return a lower bound on remaining face turns, counting half turns as one.
+
+    Each move affects at most four corners and four edges. The four counts
+    overlap, so take their maximum rather than their sum.
     """
 
     misplaced_corners = sum(
@@ -41,7 +51,8 @@ def heuristic(state):
     )
 
 
-def inverse_move(move):
+def inverse_move(move: str) -> str:
+    """Return the inverse of an already validated Singmaster move."""
     if move.endswith("2"):
         return move
 
@@ -53,6 +64,12 @@ def inverse_move(move):
 
 @dataclass(frozen=True)
 class SearchResult:
+    """Describe a completed or limited search.
+
+    solution is None unless solved. Nodes include bound cutoffs; elapsed_seconds
+    excludes input copying. bound is the current or next IDA* threshold.
+    """
+
     solution: tuple[str, ...] | None
     status: str
     nodes: int
@@ -64,11 +81,19 @@ class _SearchLimit(Exception):
     pass
 
 
-def solve(state, max_depth=10, *, max_nodes=None, time_limit=None) -> SearchResult:
+def solve(
+    state: CubieState,
+    max_depth: int = 10,
+    *,
+    max_nodes: int | None = None,
+    time_limit: float | None = None,
+) -> SearchResult:
     """Run bounded IDA* on a private copy; half turns cost one move.
 
-    Status is solved, depth_limit, node_limit or time_limit. External exceptions
-    (including KeyboardInterrupt) propagate without changing the caller's state.
+    Status is solved, depth_limit, node_limit, or time_limit. Optional budgets
+    count visited nodes and seconds; None leaves that budget unlimited.
+    Invalid limits raise ValueError. External exceptions, including
+    KeyboardInterrupt, propagate without changing the caller's state.
     """
     if type(max_depth) is not int or max_depth < 0:
         raise ValueError("max_depth must be a non-negative integer")
@@ -139,7 +164,10 @@ def solve(state, max_depth=10, *, max_nodes=None, time_limit=None) -> SearchResu
     return finish("depth_limit")
 
 
-def ida_star(state, max_depth=10):
-    """Compatibility API returning moves or None when the depth limit is exceeded."""
+def ida_star(state: CubieState, max_depth: int = 10) -> list[str] | None:
+    """Return a solution list or None when the depth limit is exceeded.
+
+    Preserve the input state. Use solve() for statistics and node/time budgets.
+    """
     result = solve(state, max_depth)
     return list(result.solution) if result.solution is not None else None
