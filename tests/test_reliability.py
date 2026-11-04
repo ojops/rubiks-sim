@@ -55,6 +55,7 @@ def test_search_limits_preserve_input(limits, status):
     state.apply_moves("R U F")
     before = state_key(state)
     result = solver.solve(state, **limits)
+
     assert result.status == status and result.solution is None
     assert state_key(state) == before
     assert result.nodes <= limits.get("max_nodes", float("inf"))
@@ -84,6 +85,7 @@ def test_conversion_rejects_changed_centres():
 
 def test_invalid_sequences_are_atomic():
     cubie, cube = CubieState(), RubiksCube()
+
     for state, method in ((cubie, cubie.apply_moves), (cube, cube.apply_singmaster)):
         with pytest.raises(ValueError):
             method(iter(["R", "X"]))
@@ -93,6 +95,7 @@ def test_invalid_sequences_are_atomic():
 def test_precomputed_moves_match_sticker_geometry():
     rng = random.Random(8)
     cube, state = RubiksCube(), CubieState()
+
     for _ in range(200):
         move = rng.choice(MOVES)
         cube.move(move)

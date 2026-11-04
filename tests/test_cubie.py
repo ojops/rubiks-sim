@@ -61,8 +61,10 @@ def test_move_and_inverse():
 def invert_move(move):
     if move.endswith("2"):
         return move
+
     if move.endswith("'"):
         return move[0]
+
     return move + "'"
 
 

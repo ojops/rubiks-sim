@@ -1,4 +1,4 @@
-"""Reproducible scramble, bounded solve and optional rendering workflow."""
+"""Reproducible scramble, bounded solve, and optional rendering workflow"""
 
 import argparse
 import importlib.util
@@ -20,14 +20,14 @@ from rubiks_sim.solver import solve
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Run the CLI and return 0 on success or 1 when search reaches a limit.
-
-    Read arguments from sys.argv when argv is None. Invalid arguments and
-    handled setup/rendering errors raise SystemExit with code 2 via argparse.
+    """
+    Run the CLI and return 0 on success or 1 when search reaches a limit
+    Read arguments from sys.argv when argv is None
+    Invalid arguments and handled setup/rendering errors raise SystemExit with code 2 via argparse
     """
     parser = argparse.ArgumentParser(description=__doc__)
     source = parser.add_mutually_exclusive_group()
-    source.add_argument("--scramble", default="", help="Space-separated face turns")
+    source.add_argument("--scramble", default="", help="Space separated face turns")
     source.add_argument("--length", type=int, help="Generate this many random moves")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--solve", action="store_true")
@@ -63,7 +63,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 cube.apply_singmaster(result.solution)
                 if not cube.is_solved():
                     raise RuntimeError(
-                        "Solution failed independent sticker-model verification"
+                        "Solution failed independent sticker model verification"
                     )
                 report["verified"] = True
                 playback.extend(result.solution)
@@ -78,10 +78,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def render(moves: list[str], output_dir: Path, *, low_quality: bool = False) -> None:
-    """Render validated moves to output_dir using a separate ManimGL process.
-
-    Use Xvfb on Linux without a display. Missing setup raises ValueError;
-    process launch or rendering failures propagate as subprocess/OS errors.
+    """
+    Render validated moves to output_dir using a separate ManimGL process
+    Use Xvfb on Linux without a display
+    Missing setup raises ValueError
+    process launch or rendering failures propagate as subprocess/OS errors
     """
     if importlib.util.find_spec("manimlib") is None:
         raise ValueError("Rendering requires: uv sync --extra render")

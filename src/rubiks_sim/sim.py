@@ -1,4 +1,4 @@
-"""ManimGL scenes driven by the exact sticker model."""
+"""ManimGL scenes driven by the exact sticker model"""
 
 from collections.abc import Iterable
 
@@ -37,7 +37,7 @@ STICKER_COLOURS = {
     "O": ORANGE,
 }
 
-# Map outward normals to the rotations of a square initially facing +Z.
+# Map outward normals to the rotations of a square initially facing +Z
 FACE_ROTATIONS = {
     (0, 0, 1): (0, OUT),
     (0, 0, -1): (PI, RIGHT),
@@ -53,7 +53,7 @@ STICKER_OFFSET = CUBIE_SIZE / 2 + 0.01
 
 
 def create_sticker(position: np.ndarray, normal: np.ndarray, colour: str) -> Square:
-    """Return a coloured square aligned with a cubie's outward normal."""
+    """Return a coloured square aligned with a cubie's outward normal"""
 
     sticker = Square(
         side_length=STICKER_SIZE,
@@ -68,19 +68,19 @@ def create_sticker(position: np.ndarray, normal: np.ndarray, colour: str) -> Squ
 
     sticker.rotate(angle, axis=axis)
 
-    # Offset from the body to prevent overlapping surfaces.
+    # Offset from the body to prevent overlapping surfaces
     sticker.move_to(position + STICKER_OFFSET * normal)
 
     return sticker
 
 
 class AnimatedRubiksCube(InteractiveScene):
-    """Animate supplied moves, or a seeded 20-move demonstration by default."""
+    """Animate supplied moves, or a seeded 20 move demonstration by default"""
 
     moves: str | Iterable[str] | None = None
 
     def construct(self) -> None:
-        """Build a solved cube and play the selected move sequence."""
+        """Build a solved cube and play the selected move sequence"""
         self.cube = RubiksCube()
 
         self.frame.reorient(
@@ -130,7 +130,6 @@ class AnimatedRubiksCube(InteractiveScene):
                     )
 
         self.add(*[cubie["group"] for cubie in self.cubies])
-
         self.wait()
 
         scramble = (
@@ -142,14 +141,13 @@ class AnimatedRubiksCube(InteractiveScene):
         print("Scramble:", " ".join(scramble))
 
         self.animate_moves(scramble, run_time=0.3)
-
         self.wait()
 
     def animate_move(self, notation: str, run_time: float = 0.6) -> None:
-        """Animate one Singmaster move and update the sticker model.
-
-        run_time is seconds per quarter turn; half turns take twice as long.
-        Reject invalid notation before playback starts.
+        """
+        Animate one Singmaster move and update the sticker model
+        run_time is seconds per quarter turn, half turns take twice as long
+        Reject invalid notation before playback starts
         """
 
         parse_moves([notation])
@@ -169,11 +167,11 @@ class AnimatedRubiksCube(InteractiveScene):
         layer_cubies = []
 
         for cubie in self.cubies:
-            # The central core has no stickers and never moves.
+            # The central core has no stickers and never moves
             if len(cubie["indices"]) == 0:
                 continue
 
-            # All stickers on a cubie share the same position.
+            # All stickers on a cubie share the same position
             sticker_index = cubie["indices"][0]
             position = self.cube.positions[sticker_index]
 
@@ -197,14 +195,14 @@ class AnimatedRubiksCube(InteractiveScene):
 
         self.cube.move(notation)
 
-        # Rebuild sticker geometry from exact coordinates to avoid visual drift.
+        # Rebuild sticker geometry from exact coordinates to avoid visual drift
         for cubie in self.cubies:
             indices = cubie["indices"]
 
             if len(indices) == 0:
                 continue
 
-            # Sticker identities stay attached to cubies after every turn.
+            # Sticker identities stay attached to cubies after every turn
             new_position = self.cube.positions[indices[0]].astype(float)
 
             cubie["body"].move_to(new_position)
@@ -220,9 +218,9 @@ class AnimatedRubiksCube(InteractiveScene):
                 sticker.apply_depth_test()
 
     def animate_moves(self, moves: str | Iterable[str], run_time: float = 0.6) -> None:
-        """Validate the whole sequence, then animate each move in order.
-
-        run_time is seconds per quarter turn, as in animate_move().
+        """
+        Validate the whole sequence, then animate each move in order
+        run_time is seconds per quarter turn, as in animate_move()
         """
 
         for move in parse_moves(moves):

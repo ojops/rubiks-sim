@@ -6,24 +6,24 @@ from rubiks_sim.cube import RubiksCube
 
 @pytest.fixture
 def cube():
-    """Return a newly initialised Rubik's Cube."""
+    """Return a newly initialised Rubik's Cube"""
     return RubiksCube()
 
 
 def test_cube_has_54_stickers(cube):
-    """Check that the cube has 54 stickers."""
+    """Check that the cube has 54 stickers"""
     assert cube.positions.shape == (54, 3)
     assert cube.normals.shape == (54, 3)
     assert cube.colours.shape == (54,)
 
 
 def test_cube_has_six_colours(cube):
-    """Check that a solved cube has six colours."""
+    """Check that a solved cube has six colours"""
     assert set(cube.colours) == {"W", "Y", "G", "B", "R", "O"}
 
 
 def test_stickers_have_unique_position_and_normal_pairs(cube):
-    """Check that sticker slots are unique."""
+    """Check that sticker slots are unique"""
 
     stickers = {
         (tuple(position), tuple(normal))
@@ -37,20 +37,20 @@ def test_stickers_have_unique_position_and_normal_pairs(cube):
 
 
 def test_stickers_are_on_cube_surface(cube):
-    """Check that every sticker lies on the cube surface."""
+    """Check that every sticker lies on the cube surface"""
 
     assert np.all(np.max(np.abs(cube.positions), axis=1) == 1)
 
 
 def test_r_move_only_affects_right_layer(cube):
-    """Check that R leaves stickers outside its layer unchanged."""
+    """Check that R leaves stickers outside its layer unchanged"""
 
     original_positions = cube.positions.copy()
     original_normals = cube.normals.copy()
 
     cube.move("R")
 
-    # Stickers outside the right layer must be unchanged.
+    # Stickers outside the right layer must be unchanged
     outside_right_layer = original_positions[:, 0] != 1
 
     np.testing.assert_array_equal(
@@ -65,15 +65,13 @@ def test_r_move_only_affects_right_layer(cube):
 
 
 def test_r_move_changes_right_layer_stickers(cube):
-    """Check that R moves the non-centre stickers in its layer."""
+    """Check that R moves the non centre stickers in its layer"""
 
     original_positions = cube.positions.copy()
-
     cube.move("R")
-
     right_layer = original_positions[:, 0] == 1
 
-    # The centre stays fixed even when its face turns.
+    # The centre stays fixed even when its face turns
     right_face_centre = (
         (original_positions[:, 0] == 1)
         & (original_positions[:, 1] == 0)
@@ -98,7 +96,8 @@ def test_r_move_changes_right_layer_stickers(cube):
     ["U", "D", "F", "B", "R", "L"],
 )
 def test_four_quarter_turns_restore_cube(cube, move):
-    """Check that four quarter turns restore the cube."""
+    """Check that four quarter turns restore the cube"""
+
     original_positions = cube.positions.copy()
     original_normals = cube.normals.copy()
 
@@ -128,7 +127,7 @@ def test_four_quarter_turns_restore_cube(cube, move):
     ],
 )
 def test_move_and_inverse_restore_cube(cube, move, inverse):
-    """Check that a move and its inverse restore the cube."""
+    """Check that a move and its inverse restore the cube"""
     original_positions = cube.positions.copy()
     original_normals = cube.normals.copy()
 
@@ -151,7 +150,7 @@ def test_move_and_inverse_restore_cube(cube, move, inverse):
     ["U", "D", "F", "B", "R", "L"],
 )
 def test_half_turn_equals_two_quarter_turns(move):
-    """Check that a half turn equals two quarter turns."""
+    """Check that a half turn equals two quarter turns"""
     cube_half = RubiksCube()
     cube_double = RubiksCube()
 
@@ -172,7 +171,7 @@ def test_half_turn_equals_two_quarter_turns(move):
 
 
 def test_move_preserves_colours(cube):
-    """Check that moves preserve sticker colours."""
+    """Check that moves preserve sticker colours"""
     original_colours = cube.colours.copy()
 
     cube.apply_singmaster("R U F' L2 D B")
@@ -184,7 +183,7 @@ def test_move_preserves_colours(cube):
 
 
 def test_apply_singmaster_string(cube):
-    """Check that a move string is accepted."""
+    """Check that a move string is accepted"""
     cube.apply_singmaster("R U R' U'")
 
     assert not np.array_equal(
@@ -194,7 +193,7 @@ def test_apply_singmaster_string(cube):
 
 
 def test_apply_singmaster_list(cube):
-    """Check that a move list is accepted."""
+    """Check that a move list is accepted"""
     cube.apply_singmaster(["R", "U", "R'", "U'"])
 
     assert not np.array_equal(
@@ -229,19 +228,19 @@ def test_apply_singmaster_string_and_list_are_equivalent():
     ["X", "R3", "U4", "", "RR"],
 )
 def test_invalid_move_raises_value_error(cube, move):
-    """Check that unsupported notation raises ValueError."""
+    """Check that unsupported notation raises ValueError"""
     with pytest.raises(ValueError):
         cube.move(move)
 
 
 def test_non_string_move_raises_type_error(cube):
-    """Check that non-string notation raises TypeError."""
+    """Check that non string notation raises TypeError"""
     with pytest.raises(TypeError):
         cube.move(123)
 
 
 def test_is_solved():
-    """Check that a newly initialised cube is solved."""
+    """Check that a newly initialised cube is solved"""
     cube = RubiksCube()
 
     assert cube.is_solved()

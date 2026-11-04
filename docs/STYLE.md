@@ -2,7 +2,7 @@
 
 ## Formatting
 
-Use Python 3.10, four-space indentation, `snake_case` functions and variables, `CapWords` classes, and `UPPER_CASE` constants. Let Ruff handle imports, 88-column wrapping, and spacing between definitions. Use blank lines inside functions to separate ideas.
+Use Python 3.10, four space indentation, `snake_case` functions and variables, `CapWords` classes, and `UPPER_CASE` constants. Let Ruff handle imports, 88 column wrapping, and spacing between definitions.
 
 ## Documentation
 
@@ -22,4 +22,4 @@ uv run ruff format --check .
 uv run pytest
 ```
 
-Keep documentation and formatting separate from algorithm changes where practical. There is no mandatory type-checking or docstring-linting gate.
+Keep documentation and formatting separate from algorithm changes where practical. There is no mandatory type checking or docstring linting gate.

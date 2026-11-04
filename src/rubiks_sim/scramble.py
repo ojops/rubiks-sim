@@ -1,4 +1,4 @@
-"""Seeded random move sequences for demonstrations and search experiments."""
+"""Seeded random move sequences for demonstrations and search experiments"""
 
 import random
 
@@ -6,10 +6,11 @@ import random
 def generate_scramble(
     length: int = 25, seed: int | float | str | bytes | bytearray | None = None
 ) -> list[str]:
-    """Return random face moves without consecutive turns of the same face.
-
-    Supply a seed for repeatable output. Reject non-integer or negative lengths.
-    This produces random move sequences, not uniform random cube states.
+    """
+    Return random face moves without consecutive turns of the same face
+    Supply a seed for repeatable output
+    Reject non integer or negative lengths
+    This produces random move sequences, not uniform random cube states
     """
 
     if not isinstance(length, int) or isinstance(length, bool):

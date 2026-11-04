@@ -1,4 +1,4 @@
-"""Run with uv run python benchmarks/solver.py; times are machine-dependent."""
+"""Run with uv run python benchmarks/solver.py, times are machine dependent"""
 
 import json
 from dataclasses import asdict

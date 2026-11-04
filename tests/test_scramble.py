@@ -27,7 +27,6 @@ def test_scramble_contains_valid_moves():
 
 def test_no_consecutive_moves_use_same_face():
     moves = scramble.generate_scramble()
-
     faces = [move[0] for move in moves]
 
     assert all(faces[i] != faces[i - 1] for i in range(1, len(faces)))

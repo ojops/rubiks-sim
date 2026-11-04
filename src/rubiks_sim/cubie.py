@@ -1,4 +1,4 @@
-"""Corner and edge states, physical validation, and precomputed face turns."""
+"""Corner and edge states, physical validation, and precomputed face turns"""
 
 from __future__ import annotations
 
@@ -12,15 +12,14 @@ if TYPE_CHECKING:
 
 
 class CubieState:
-    """Represent a cube using eight corners and twelve edges.
-
-    Permutations identify the piece at each position in CORNER_FACES/EDGE_FACES.
-    Orientations record corner twists modulo three and edge flips modulo two.
-    Construction copies the supplied values and rejects unreachable states.
+    """
+    Represent a cube using eight corners and twelve edges
+    Permutations identify the piece at each position in CORNER_FACES/EDGE_FACES
+    Orientations record corner twists modulo three and edge flips modulo two
+    Construction copies the supplied values and rejects unreachable states
     """
 
-    # Face convention: U/D = ±Y, F/B = ±Z, R/L = ±X.
-
+    # Face convention: U/D = ±Y, F/B = ±Z, and R/L = ±X
     CORNER_FACES = (
         ("U", "R", "F"),  # URF
         ("U", "F", "L"),  # UFL
@@ -56,7 +55,7 @@ class CubieState:
         "L": (-1, 0, 0),
     }
 
-    # Keep the colour convention aligned with the sticker model.
+    # Keep the colour convention aligned with the sticker model
     FACE_COLOURS = {
         "U": "W",
         "D": "Y",
@@ -67,8 +66,8 @@ class CubieState:
     }
 
     MOVE_TABLES = {
-        # Entries contain corner sources, corner twists, edge sources, and flips.
-        # Sources refer to old positions; orientation deltas apply at new positions.
+        # Entries contain corner sources, corner twists, edge sources, and flips
+        # Sources refer to old positions (orientation deltas apply at new positions)
         "U": (
             (3, 0, 1, 2, 4, 5, 6, 7),
             (0, 0, 0, 0, 0, 0, 0, 0),
@@ -132,7 +131,7 @@ class CubieState:
         self.validate()
 
     def copy(self) -> CubieState:
-        """Return an independent, validated copy of this state."""
+        """Return an independent, validated copy of this state"""
         return type(self)(
             self.corner_permutation,
             self.corner_orientation,
@@ -141,7 +140,7 @@ class CubieState:
         )
 
     def validate(self) -> None:
-        """Reject malformed or physically unreachable cubie states."""
+        """Reject physically unreachable cubie states"""
         for name, values, size, modulus in (
             ("corner_permutation", self.corner_permutation, 8, None),
             ("edge_permutation", self.edge_permutation, 12, None),
@@ -150,9 +149,11 @@ class CubieState:
         ):
             if len(values) != size or any(type(v) is not int for v in values):
                 raise ValueError(f"{name} must contain {size} integers")
+
             if modulus is None:
                 if sorted(values) != list(range(size)):
                     raise ValueError(f"{name} must be a permutation of range({size})")
+
             elif any(v < 0 or v >= modulus for v in values) or sum(values) % modulus:
                 raise ValueError(f"Invalid {name}: range or orientation sum")
 
@@ -164,10 +165,10 @@ class CubieState:
 
     @classmethod
     def from_cube(cls, cube: RubiksCube) -> CubieState:
-        """Convert sticker geometry into a validated cubie state.
-
-        Raise ValueError for invalid geometry, colours, or unreachable pieces.
-        Centre colours must match the fixed face convention.
+        """
+        Convert sticker geometry into a validated cubie state
+        Raise ValueError for invalid geometry, colours, or unreachable pieces
+        Centre colours must match the fixed face convention
         """
 
         if (
@@ -202,7 +203,7 @@ class CubieState:
 
             stickers_by_position.setdefault(position_key, {})[face] = str(colour)
 
-        # Piece identity depends on colours, regardless of orientation.
+        # Piece identity depends on colours, regardless of orientation
         corner_piece_ids = {
             frozenset(cls.FACE_COLOURS[face] for face in faces): piece_id
             for piece_id, faces in enumerate(cls.CORNER_FACES)
@@ -232,7 +233,7 @@ class CubieState:
 
             corner_permutation.append(piece_id)
 
-            # Only cyclic rotations preserve a corner's physical handedness.
+            # Only cyclic rotations preserve a corner's physical handedness
             piece_faces = cls.CORNER_FACES[piece_id]
             piece_colours = tuple(cls.FACE_COLOURS[face] for face in piece_faces)
 
@@ -260,7 +261,6 @@ class CubieState:
             )
 
             observed = stickers_by_position[position]
-
             observed_colours = tuple(observed[face] for face in position_faces)
 
             piece_id = edge_piece_ids.get(frozenset(observed_colours))
@@ -289,8 +289,7 @@ class CubieState:
         )
 
     def is_solved(self) -> bool:
-        """Return whether every piece is in its solved position and orientation."""
-
+        """Return whether every piece is in its solved position and orientation"""
         return (
             self.corner_permutation == list(range(8))
             and self.corner_orientation == [0] * 8
@@ -336,7 +335,7 @@ class CubieState:
         ]
 
     def apply_move(self, move: str) -> None:
-        """Apply one Singmaster move in place; reject unsupported notation."""
+        """Apply one Singmaster move in place and reject unsupported notation"""
 
         if not isinstance(move, str):
             raise TypeError("Move notation must be a string")
@@ -346,20 +345,20 @@ class CubieState:
         self._apply_table(FULL_MOVE_TABLES[move])
 
     def apply_moves(self, moves: str | Iterable[str]) -> None:
-        """Apply a string or iterable of Singmaster moves in place.
-
-        Validate the whole sequence before changing the state.
+        """
+        Apply a string or iterable of Singmaster moves in place
+        Validate the whole sequence before changing the state
         """
         for move in parse_moves(moves):
             self.apply_move(move)
 
 
 def _build_full_move_tables():
-    """Compose quarter turns into all 18 supported move transformations."""
+    """Compose quarter turns into all 18 supported move transformations"""
     tables = {}
     for face in CubieState.MOVE_TABLES:
         state = CubieState()
-        # Accumulate one, two, then three quarter turns from the solved state.
+        # Accumulate one, two, then three quarter turns from the solved state
         for suffix in ("", "2", "'"):
             state._apply_quarter_turn(face)
             tables[face + suffix] = tuple(

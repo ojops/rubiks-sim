@@ -1,4 +1,4 @@
-"""Optional rendering-boundary checks without creating a graphics context."""
+"""Optional rendering boundary checks without creating a graphics context"""
 
 import pytest
 

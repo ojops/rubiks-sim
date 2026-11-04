@@ -1,4 +1,4 @@
-"""Sticker geometry and exact face-turn rotations."""
+"""Sticker geometry and exact face turn rotations"""
 
 from collections.abc import Iterable
 
@@ -8,10 +8,10 @@ from rubiks_sim.notation import VALID_MOVES, parse_moves
 
 
 class RubiksCube:
-    """Represent a 3x3 cube using 54 stickers and exact integer geometry.
-
-    Each sticker has a position, outward normal, and colour identifier.
-    Coordinates use x for right, y for up, and z for front.
+    """
+    Represent a 3x3 cube using 54 stickers and exact integer geometry
+    Each sticker has a position, outward normal, and colour identifier
+    Coordinates use x for right, y for up, and z for front
     """
 
     FACE_COLOURS = {
@@ -51,7 +51,7 @@ class RubiksCube:
         self._initialise_solved_cube()
 
     def _initialise_solved_cube(self) -> None:
-        """Create the 54 stickers of a solved cube."""
+        """Create the 54 stickers of a solved cube"""
 
         positions = []
         normals = []
@@ -60,7 +60,7 @@ class RubiksCube:
         for face, colour in self.FACE_COLOURS.items():
             for row in range(3):
                 for col in range(3):
-                    # Rows and columns are viewed from outside each face.
+                    # Rows and columns are viewed from outside each face
 
                     if face == "U":
                         position = (col - 1, 1, row - 1)
@@ -87,21 +87,19 @@ class RubiksCube:
                     colours.append(colour)
 
         self.positions = np.array(positions, dtype=np.int8)
-
         self.normals = np.array(normals, dtype=np.int8)
-
         self.colours = np.array(colours, dtype="<U1")
 
     @classmethod
     def _face_normal(cls, face: str) -> tuple[int, int, int]:
-        """Return the outward normal of a face."""
+        """Return the outward normal of a face"""
         return cls.FACE_NORMALS[face]
 
     @staticmethod
     def _rotation_matrix(axis: int, quarter_turns: int) -> np.ndarray:
-        """Return an integer rotation matrix about the positive coordinate axis.
-
-        Positive quarter turns follow the right-hand rule; two turns give 180°.
+        """
+        Return an integer rotation matrix about the positive coordinate axis
+        Positive quarter turns follow the right hand rule (two turns give 180°)
         """
 
         rotations = {
@@ -129,15 +127,13 @@ class RubiksCube:
         }
 
         matrix = rotations[axis]
-
-        # Powers of a +90° matrix also cover half turns and inverse turns.
-
+        # Powers of a +90° matrix also cover half turns and inverse turns
         return np.linalg.matrix_power(matrix, quarter_turns % 4)
 
     def move(self, notation: str) -> None:
-        """Apply one Singmaster move, such as R, U', or F2, in place.
-
-        Reject non-string or unsupported notation before changing the cube.
+        """
+        Apply one Singmaster move, such as R, U', or F2, in place
+        Reject non string or unsupported notation before changing the cube
         """
 
         if not isinstance(notation, str):
@@ -156,21 +152,17 @@ class RubiksCube:
             turns = 1
 
         axis, sign = self.FACE_AXES[face]
-
         mask = self.positions[:, axis] == sign
 
-        # Clockwise from outside is negative about the outward normal.
-
+        # Clockwise from outside is negative about the outward normal
         quarter_turns = -sign * turns
-
         matrix = self._rotation_matrix(axis, quarter_turns)
 
         self.positions[mask] = self.positions[mask] @ matrix.T
-
         self.normals[mask] = self.normals[mask] @ matrix.T
 
     def is_solved(self) -> bool:
-        """Return whether every face has its expected colour."""
+        """Return whether every face has its expected colour"""
 
         for face, normal in self.FACE_NORMALS.items():
             mask = np.all(self.normals == normal, axis=1)
@@ -181,9 +173,9 @@ class RubiksCube:
         return True
 
     def apply_singmaster(self, singmaster: str | Iterable[str]) -> None:
-        """Apply a space-separated string or iterable of Singmaster moves in place.
-
-        Validate the whole sequence before changing the cube.
+        """
+        Apply a space separated string or iterable of Singmaster moves in place
+        Validate the whole sequence before changing the cube
         """
 
         for move in parse_moves(singmaster):

@@ -4,7 +4,7 @@ A Python project for modelling, solving, and visualising Rubik's Cube operations
 
 ## Overview
 
-The simulator represents the cube in two ways: a sticker model for geometry and animation, and a compact corner-and-edge model for solving. Development is progressing from reliable moves and shallow searches towards stronger solving algorithms.
+The simulator represents the cube in two ways: a sticker model for geometry and animation, and a compact corner and edge model for solving. Development is progressing from reliable moves and shallow searches towards stronger solving algorithms.
 
 ## Features
 
@@ -16,7 +16,7 @@ The simulator represents the cube in two ways: a sticker model for geometry and 
 - Solution verification against the sticker model
 - 3D animation using ManimGL
 
-The solver currently handles shallow scrambles. Fast solving of arbitrary cube states is not implemented, and generated scrambles are random move sequences rather than competition-standard random-state scrambles.
+The solver currently handles shallow scrambles. Fast solving of arbitrary cube states is not implemented, and generated scrambles are random move sequences rather than competition standard random state scrambles.
 
 ## Requirements
 
@@ -76,29 +76,29 @@ Render a scramble followed by its verified solution:
 uv run --extra render rubiks-sim --scramble "R U F" --solve --render --low-quality
 ```
 
-Render the original 20-move demonstration directly:
+Render the original 20 move demonstration directly:
 
 ```bash
 uv run --extra render manimgl src/rubiks_sim/sim.py AnimatedRubiksCube -w
 ```
 
-Videos are saved under `videos/`. The CLI also accepts `--output-dir` and automatically uses `xvfb-run` on Linux when no display is available. Rendering logs accompany the JSON output; omit `--render` when reading stdout as a JSON document.
+Videos are saved under `videos/`. The CLI also accepts `--output-dir` and automatically uses `xvfb-run` on Linux when no display is available. Rendering logs accompany the JSON output, omit `--render` when reading stdout as a JSON document.
 
 ## Solving assumptions
 
 Supported moves are `U`, `D`, `F`, `B`, `R`, and `L`, optionally followed by `'` or `2`. A half turn counts as one move. Cube conversion assumes fixed face colours and rejects physically unreachable cubie states.
 
-The CLI defaults to a depth limit of 10, 100,000 visited nodes, and five seconds. Reaching a limit means the search stopped without finding a solution; it does not mean the cube is unsolvable. Exit codes are 0 for success, 1 when no solution is found within the limits, and 2 for invalid arguments or handled setup/rendering errors.
+The CLI defaults to a depth limit of 10, 100,000 visited nodes, and five seconds. Reaching a limit means the search stopped without finding a solution, it does not mean the cube is unsolvable. Exit codes are 0 for success, 1 when no solution is found within the limits, and 2 for invalid arguments or handled setup/rendering errors.
 
 See [algorithm notes](docs/ALGORITHMS.md) for the representations, search method, and Python API.
 
 ## Development Roadmap
 
-- **Solving:** Develop a stronger heuristic and evaluate deeper searches.
-- **Algorithms:** Compare improving optimal IDA* search with a practical two-phase solver.
-- **Scrambling:** Explore competition-standard random-state scramble generation.
-- **Visualisation:** Improve the appearance and interaction of the cube animation.
-- **Evaluation:** Measure search performance and extend checks for the CLI rendering workflow.
+- **Solving:** Develop a stronger heuristic and evaluate deeper searches
+- **Algorithms:** Compare improving optimal IDA* search with a practical two phase solver
+- **Scrambling:** Explore competition standard random state scramble generation
+- **Visualisation:** Improve the appearance and interaction of the cube animation
+- **Evaluation:** Measure search performance and extend checks for the CLI rendering workflow
 
 ## Project Structure
 
@@ -116,7 +116,7 @@ See [algorithm notes](docs/ALGORITHMS.md) for the representations, search method
 | `benchmarks/solver.py` | Small repeatable search benchmarks |
 | `.github/workflows/checks.yml` | Automated code checks, tests, and demo rendering |
 | `pyproject.toml` / `uv.lock` | Project configuration and locked dependencies |
-| `videos/` | Generated videos; not tracked in Git |
+| `videos/` | Generated videos, not tracked in Git |
 
 ## Development
 
@@ -130,7 +130,7 @@ uv run ruff format --check .
 
 Run the search benchmarks with `uv run python benchmarks/solver.py`. Timings depend on the machine.
 
-Add core dependencies with `uv add package-name`, or rendering dependencies with `uv add --optional render package-name`. Commit both `pyproject.toml` and `uv.lock` when they change. Use the locked uv workflow for rendering: the pinned ManimGL Git source is configured through uv and is not preserved in standard wheel metadata.
+Add core dependencies with `uv add package-name`, or rendering dependencies with `uv add --optional render package-name`. Commit both `pyproject.toml` and `uv.lock` when they change. Use the locked uv workflow for rendering, the pinned ManimGL Git source is configured through uv and is not preserved in standard wheel metadata.
 
 GitHub Actions runs the checks on pushes and pull requests. See [coding conventions](docs/STYLE.md).
 
