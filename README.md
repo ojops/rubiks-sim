@@ -2,6 +2,13 @@
 
 A Python project for modelling, solving, and visualising Rubik's Cube operations using [ManimGL](https://github.com/3b1b/manim), with the longer term aim of developing an efficient solver.
 
+[![An exact four-move scramble animated with the project's ManimGL cube](docs/media/preview.gif)](docs/media/demo.mp4?raw=1)
+
+**[Watch the full demonstration — 32 seconds, 1080p](docs/media/demo.mp4?raw=1).**
+The actual bounded IDA* solver returns a solution to `R U F2 L`; both models and
+the rendered sticker geometry verify it. This demonstrates shallow-scramble
+solving. [Recorded results](docs/media/demo-data.json) · [Regenerate the video](docs/DEMO.md).
+
 ## Overview
 
 The simulator represents the cube in two ways: a sticker model for geometry and animation, and a compact corner and edge model for solving. Development is progressing from reliable moves and shallow searches towards stronger solving algorithms.

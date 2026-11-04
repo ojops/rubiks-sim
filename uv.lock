@@ -654,6 +654,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+demo = [
+    { name = "pillow" },
+]
 render = [
     { name = "av" },
     { name = "manimgl" },
@@ -670,8 +673,9 @@ requires-dist = [
     { name = "av", marker = "extra == 'render'", specifier = ">=17.1.0" },
     { name = "manimgl", marker = "extra == 'render'", git = "https://github.com/3b1b/manim.git?rev=fafa083a4fb274bba9cabde0b6e2f50ba6da0622" },
     { name = "numpy", specifier = ">=2.2.6,<3" },
+    { name = "pillow", marker = "extra == 'demo'", specifier = "==12.3.0" },
 ]
-provides-extras = ["render"]
+provides-extras = ["render", "demo"]
 
 [package.metadata.requires-dev]
 dev = [
