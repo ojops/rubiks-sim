@@ -1,10 +1,16 @@
 # Reproducing the portfolio demonstration
 
-The committed film is `media/demo.mp4`: 32 seconds, 1920 × 1080, 30 FPS,
-H.264/yuv420p with fast-start metadata and no audio. `media/preview.gif` is an
-8-second, 768 × 432, 10 FPS looping excerpt for the README. Both use relative
-links and live in Git: their small sizes avoid external hosting and make the
-preview work on the pull-request branch as well as after merging.
+`media/demo.mp4` is a 32-second silent film, 1920 × 1080 at 30 FPS,
+encoded as H.264/yuv420p with fast-start metadata. `media/demo.gif` shows
+the entire 32-second film at its original pace, at 768 × 432 and 10 FPS,
+looping directly in the README. There is no shortened excerpt.
+
+Both media files are tracked in Git. The animation uses a relative link;
+the MP4 link uses a raw GitHub URL pinned to its media commit to avoid
+branch-dependent redirects. When regenerating and committing a new MP4,
+update the pinned README links to that commit. The link opens or downloads
+the MP4 depending on the browser; the README animation itself has no
+play/pause controls. No external hosting service is required.
 
 From the repository root, with Python 3.10 and uv:
 
@@ -68,7 +74,7 @@ uv run --locked --extra demo --extra render pytest
 uv run --locked ruff check .
 uv run --locked ruff format --check .
 ffmpeg -v error -i docs/media/demo.mp4 -f null -
-ffmpeg -v error -i docs/media/preview.gif -f null -
+ffmpeg -v error -i docs/media/demo.gif -f null -
 ffprobe -v error -show_streams -show_format docs/media/demo.mp4
 ```
 
@@ -80,6 +86,6 @@ with the CLI. Representative encoded frames were inspected for geometry,
 clipping, notation and legibility, including turns in progress and the final
 state. The original scene was also smoke-rendered after the extraction.
 
-The preview is a silent excerpt; the complete explanation is in the MP4 and
-this document. Rendered media is committed intentionally; do not commit scratch
-frames or temporary graphics caches.
+The README animation covers the complete silent film. The linked MP4 provides
+the full-resolution version. Rendered media is committed intentionally; do not
+commit scratch frames or temporary graphics caches.
