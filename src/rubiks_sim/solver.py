@@ -1,4 +1,4 @@
-"""Bounded IDA* search using the compact cubie representation"""
+"""Bounded IDA* search using the compact cubie representation."""
 
 from __future__ import annotations
 
@@ -25,11 +25,7 @@ FACE_ORDER = {face: index for index, face in enumerate(FACES)}
 
 
 def heuristic(state: CubieState) -> int:
-    """
-    Return a lower bound on remaining face turns, counting half turns as one
-    Each move affects at most four corners and four edges
-    The four counts overlap, so take their maximum rather than their sum
-    """
+    """Estimate remaining moves without overcounting overlapping cubie changes."""
 
     misplaced_corners = sum(
         piece != position for position, piece in enumerate(state.corner_permutation)
@@ -64,11 +60,10 @@ def inverse_move(move: str) -> str:
 
 @dataclass(frozen=True)
 class SearchResult:
-    """
-    Describe a completed or limited search
-    solution is None unless solved
-    Nodes include bound cutoffs, and elapsed_seconds excludes input copying
-    bound is the current or next IDA* threshold
+    """Store the solution, stopping reason and IDA* search statistics.
+
+    The solution is None unless solved. Node counts include bound cutoffs;
+    elapsed time excludes the initial state copy. The bound is a search threshold.
     """
 
     solution: tuple[str, ...] | None
@@ -89,12 +84,10 @@ def solve(
     max_nodes: int | None = None,
     time_limit: float | None = None,
 ) -> SearchResult:
-    """
-    Run bounded IDA* on a private copy, half turns cost one move
-    Status is solved, depth_limit, node_limit, or time_limit
-    Optional budgets count visited nodes and seconds, None leaves that budget unlimited
-    Invalid limits raise ValueError
-    External exceptions, includingKeyboardInterrupt, propagate without changing the caller's state
+    """Search a validated copy using bounded IDA*; half turns cost one move.
+
+    Limits are optional (None means unlimited). Invalid limits raise ValueError;
+    unexpected exceptions propagate without modifying the caller's state.
     """
 
     if type(max_depth) is not int or max_depth < 0:
@@ -174,11 +167,7 @@ def solve(
 
 
 def ida_star(state: CubieState, max_depth: int = 10) -> list[str] | None:
-    """
-    Return a solution list or None when the depth limit is exceeded
-    Preserve the input state
-    Use solve() for statistics and node/time budgets
-    """
+    """Find a solution within max_depth, without modifying the input state."""
 
     result = solve(state, max_depth)
     return list(result.solution) if result.solution is not None else None
