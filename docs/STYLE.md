@@ -1,20 +1,21 @@
 # Coding conventions
 
-## Formatting
+These conventions keep the simulator readable without imposing unnecessary tooling.
 
-Use Python 3.10, four space indentation, `snake_case` functions and variables, `CapWords` classes, and `UPPER_CASE` constants. Let Ruff handle imports, 88 column wrapping, and spacing between definitions.
+## Python
 
-## Documentation
+- Target Python 3.10; use four-space indentation and Ruff's 88-character formatting.
+- Name functions and variables `snake_case`, classes `CapWords`, and constants `UPPER_CASE`.
+- Let Ruff sort imports and format code. Add type annotations to public interfaces where practical.
 
-Start docstrings with a short action sentence and a full stop. Explain mutation, returns, units, and errors where useful. Spell `Singmaster`, `NumPy`, and `ManimGL` consistently.
+## Comments and behaviour
 
-Annotate public function parameters and return types. Move sequences use `str | Iterable[str]`. Internal helpers and tests need extra documentation only when it clarifies behaviour.
+- Use concise docstrings to describe purpose, non-obvious effects, return values and errors.
+- Explain **why** coordinate, orientation, search-pruning or animation-sync decisions are necessary; do not narrate obvious assignments.
+- Validate complete move sequences before changing state. Keep solving separate from printing and graphics.
+- Treat a search limit as an incomplete search, never as proof that a state is unsolvable.
 
-Keep comments focused on coordinate conventions, orientations, search pruning, and graphics synchronisation. Avoid narrating obvious assignments.
-
-## Behaviour and checks
-
-Validate whole move sequences before mutation or playback. Keep solving independent of printing and graphics. Treat search limits as incomplete searches, not unsolvable cubes.
+## Checks
 
 ```bash
 uv run ruff check .
@@ -22,4 +23,4 @@ uv run ruff format --check .
 uv run pytest
 ```
 
-Keep documentation and formatting separate from algorithm changes where practical. There is no mandatory type checking or docstring linting gate.
+Keep formatting-only changes separate from algorithm changes where practical. Type checking and docstring linting are not mandatory CI gates.

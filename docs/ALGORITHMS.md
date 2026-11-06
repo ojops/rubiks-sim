@@ -1,28 +1,40 @@
-# Cube models and solving
+# Cube models and search
 
-## Representations
+This project uses a sticker model for geometry and a compact cubie model for solving. Both share the same face and colour conventions.
 
-`RubiksCube` (`cube.py`) stores 54 stickers with integer positions, outward normals, and colours. Face turns rotate one layer using integer matrices, avoiding floating point drift. Animation follows this model.
+## Cube representations
 
-`CubieState` (`cubie.py`) stores the positions and orientations of eight corners and twelve edges. Precomputed tables apply each of the 18 supported moves in one transformation.
+- **`RubiksCube` (`cube.py`)** stores 54 stickers as integer positions, outward normals and colours. Face turns use integer rotation matrices, avoiding cumulative floating-point drift.
+- **`CubieState` (`cubie.py`)** stores the permutations and orientations of eight corners and twelve edges. Precomputed transformations cover all 18 supported face moves.
 
-Both models use U/D = ±Y, F/B = ±Z, and R/L = ±X, with white/yellow, green/blue, and red/orange face colours. Conversion checks sticker geometry and fixed centres. Cubie validation checks unique pieces, corner twists summing to 0 modulo 3, edge flips summing to 0 modulo 2, and matching permutation parity.
+The axes are U/D = ±Y, F/B = ±Z and R/L = ±X; opposite-face colours are white/yellow, green/blue and red/orange.
 
-## Search
+Conversion checks geometry and fixed-centre colours. Cubie validation requires unique pieces, corner twists summing to 0 modulo 3, edge flips summing to 0 modulo 2, and matching corner/edge permutation parity.
 
-`solver.py` uses Iterative Deepening A* (IDA*): depth first search with an increasing bound on moves used plus estimated moves remaining. Half turns count as one move.
+## Search algorithm
 
-The estimate takes the maximum of four counts divided by four and rounded up: misplaced corners, misplaced edges, twisted corners, and flipped edges. One move affects at most four corners and four edges, making this a lower bound. Consecutive same face turns and duplicate orderings of commuting opposite face turns are skipped without losing shortest solutions.
+`solver.py` uses **iterative deepening A*** (IDA*): depth-first search with an increasing bound on moves taken plus estimated moves remaining. Quarter turns and half turns each cost one move.
 
-## API and limits
+The admissible heuristic is the maximum of four lower bounds:
 
-- `ida_star(state, max_depth=10)` returns a solution list or `None`.
-- `solve(state, max_depth=10, max_nodes=None, time_limit=None)` returns a `SearchResult` with the solution, status, visited nodes, elapsed seconds, and search bound.
+```text
+ceil(misplaced corners / 4)
+ceil(misplaced edges / 4)
+ceil(twisted corners / 4)
+ceil(flipped edges / 4)
+```
 
-Both preserve the input by searching a validated copy. Library node/time budgets default to unlimited (the CLI uses 100,000 nodes and five seconds). Nodes include bound cutoffs. Time is measured after copying and checked before each node.
+Each face move affects at most four corners and four edges. Taking the maximum, rather than the sum, avoids counting overlapping effects twice. Search also skips consecutive turns of the same face and redundant orderings of commuting opposite-face turns.
 
-Statuses are `solved`, `depth_limit`, `node_limit`, and `time_limit`. A limit does not mean unsolvability. The reported bound is a search threshold, not a proven distance on interruption. The CLI verifies solutions against the sticker model.
+## Python API
+
+- `ida_star(state, max_depth=10)` returns a list of moves, or `None` if no solution is found within the depth limit.
+- `solve(state, max_depth=10, max_nodes=None, time_limit=None)` returns a `SearchResult` with the solution, status, visited nodes, elapsed seconds and search bound.
+
+Both search a validated copy, preserving the caller's state. Library node and time budgets default to unlimited; CLI defaults are 100,000 nodes and five seconds. Node counts include bound cutoffs. Measured time excludes the initial state copy.
+
+Statuses are `solved`, `depth_limit`, `node_limit` and `time_limit`. Reaching a limit **does not imply an unsolvable state**. The reported bound is the current search threshold, not necessarily a proven distance when interrupted. The CLI independently checks returned solutions against the sticker model.
 
 ## Limitations
 
-The heuristic never exceeds three, so deep searches remain expensive. Stronger coordinate based heuristics or a two phase solver are future work. The current solver is intended for shallow scrambles.
+The current heuristic is weak (at most three moves), so search becomes expensive on deeper scrambles. Stronger coordinate heuristics or a two-phase solver are future work.

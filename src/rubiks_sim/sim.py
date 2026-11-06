@@ -81,6 +81,20 @@ class AnimatedRubiksCube(InteractiveScene):
 
     def construct(self) -> None:
         """Build a solved cube and play the selected move sequence"""
+        self.build_cube()
+        self.wait()
+
+        scramble = (
+            parse_moves(self.moves)
+            if self.moves is not None
+            else generate_scramble(length=20, seed=42)
+        )
+        print("Scramble:", " ".join(scramble))
+        self.animate_moves(scramble, run_time=0.3)
+        self.wait()
+
+    def build_cube(self) -> None:
+        """Add solved geometry without playback, for reusable demonstration scenes."""
         self.cube = RubiksCube()
 
         self.frame.reorient(
@@ -130,18 +144,6 @@ class AnimatedRubiksCube(InteractiveScene):
                     )
 
         self.add(*[cubie["group"] for cubie in self.cubies])
-        self.wait()
-
-        scramble = (
-            parse_moves(self.moves)
-            if self.moves is not None
-            else generate_scramble(length=20, seed=42)
-        )
-
-        print("Scramble:", " ".join(scramble))
-
-        self.animate_moves(scramble, run_time=0.3)
-        self.wait()
 
     def animate_move(self, notation: str, run_time: float = 0.6) -> None:
         """
