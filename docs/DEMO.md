@@ -1,9 +1,8 @@
 # Reproducing the portfolio demonstration
 
 `media/demo.mp4` is a 32-second silent film, 1920 × 1080 at 30 FPS,
-encoded as H.264/yuv420p with fast-start metadata. `media/demo.gif` shows
-the entire 32-second film at its original pace, at 768 × 432 and 10 FPS,
-looping directly in the README. There is no shortened excerpt.
+encoded as H.264/yuv420p with fast-start metadata. `media/preview.gif` loops the opening eight seconds at 768 × 432 and 10 FPS.
+The linked MP4 contains the complete film.
 
 Both media files are tracked in Git. The animation uses a relative link;
 the MP4 link uses a raw GitHub URL pinned to its media commit to avoid
@@ -30,7 +29,7 @@ not install the demo extra.
 
 Use `--output-dir /path/to/output` to render elsewhere. Intermediate ManimGL
 video, configuration and writable caches are created in a temporary directory
-and removed automatically. Only the two finished media files and the JSON
+and removed automatically. Only the full MP4, short preview GIF and JSON
 recording are tracked. The script sets local cache locations for ManimGL and
 Matplotlib; it does not need a writable home directory.
 
@@ -74,7 +73,7 @@ uv run --locked --extra demo --extra render pytest
 uv run --locked ruff check .
 uv run --locked ruff format --check .
 ffmpeg -v error -i docs/media/demo.mp4 -f null -
-ffmpeg -v error -i docs/media/demo.gif -f null -
+ffmpeg -v error -i docs/media/preview.gif -f null -
 ffprobe -v error -show_streams -show_format docs/media/demo.mp4
 ```
 
@@ -86,6 +85,6 @@ with the CLI. Representative encoded frames were inspected for geometry,
 clipping, notation and legibility, including turns in progress and the final
 state. The original scene was also smoke-rendered after the extraction.
 
-The README animation covers the complete silent film. The linked MP4 provides
+The README animation is an eight-second loop of the opening scramble. The linked MP4 provides
 the full-resolution version. Rendered media is committed intentionally; do not
 commit scratch frames or temporary graphics caches.

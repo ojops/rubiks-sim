@@ -224,7 +224,7 @@ def main():
             reader.stdout.close()
             if reader.wait() != 0:
                 raise RuntimeError("Cube clip decoding failed")
-    preview(args.output_dir / "demo.mp4", args.output_dir / "demo.gif", 0, DURATION)
+    preview(args.output_dir / "demo.mp4", args.output_dir / "preview.gif", 0, 8)
 
 
 if __name__ == "__main__":
