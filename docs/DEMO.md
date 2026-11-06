@@ -1,90 +1,45 @@
-# Reproducing the portfolio demonstration
+# Portfolio video: reproduction and verification
 
-`media/demo.mp4` is a 32-second silent film, 1920 × 1080 at 30 FPS,
-encoded as H.264/yuv420p with fast-start metadata. `media/preview.gif` loops the opening eight seconds at 768 × 432 and 10 FPS.
-The linked MP4 contains the complete film.
+The README embeds an **eight-second looping GIF** (`docs/media/preview.gif`) and links to the complete **32-second, silent 1080p MP4** (`docs/media/demo.mp4`). Both are generated from the project's actual cube model and solver, not hand-animated moves.
 
-Both media files are tracked in Git. The animation uses a relative link;
-the MP4 link uses a raw GitHub URL pinned to its media commit to avoid
-branch-dependent redirects. When regenerating and committing a new MP4,
-update the pinned README links to that commit. The link opens or downloads
-the MP4 depending on the browser; the README animation itself has no
-play/pause controls. No external hosting service is required.
+## Generate
 
-From the repository root, with Python 3.10 and uv:
+From the repository root, with Python 3.10 and [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv sync --locked --extra demo --extra render
-uv run --locked --extra demo --extra render python scripts/render_demo.py
+uv sync --locked --extra render --extra demo
+uv run --locked --extra render --extra demo python scripts/render_demo.py
 ```
 
-Install FFmpeg (with libx264), DejaVu Sans/Mono (`fonts-dejavu-core` on Ubuntu),
-and the ManimGL system dependencies described in the README. The film was
-successfully rendered with the pinned ManimGL revision using a surfaceless
-graphics backend, without Xvfb. On a machine that requires a display, run the
-generation command under `xvfb-run -a` after installing Xvfb and xauth. Pillow
-12.3.0 is the only new optional dependency; the existing `render` extra supplies
-ManimGL, NumPy/SciPy and its other graphics dependencies. Core installations do
-not install the demo extra.
+Install FFmpeg with H.264 encoding, DejaVu fonts, and the ManimGL system dependencies described in the [README](../README.md). On a headless machine that requires a display, install Xvfb/xauth and prefix the render command with `xvfb-run -a`. The rendering dependencies are optional for normal CLI use.
 
-Use `--output-dir /path/to/output` to render elsewhere. Intermediate ManimGL
-video, configuration and writable caches are created in a temporary directory
-and removed automatically. Only the full MP4, short preview GIF and JSON
-recording are tracked. The script sets local cache locations for ManimGL and
-Matplotlib; it does not need a writable home directory.
+Use `--output-dir /path/to/output` to change the destination. Temporary ManimGL footage and caches are cleaned up automatically.
 
-## What actually runs
+## What the film demonstrates
 
-1. `rubiks_sim.demo_data.build_demo()` applies `R U F2 L` through
-   `RubiksCube.apply_singmaster`, converts to `CubieState`, and calls `solve`
-   with depth 6, 100,000 nodes and no wall-clock cutoff.
-2. The solver returns `L' F2 U' R'`, visiting 551 nodes at bound 4 on the
-   recorded source. Both sticker and cubie representations verify the result.
-3. `scripts/cube_scene.py` subclasses the existing `AnimatedRubiksCube`, reusing
-   its cube construction and `animate_move` implementation. The new
-   `build_cube` method only extracts the existing construction for reuse; the
-   original scene and CLI keep their behaviour.
-4. At all nine state boundaries (initial, four scramble, four solution), the
-   scene checks exact model arrays and all 54 rendered sticker centres and
-   planes. A failed check aborts rendering.
-5. The cube is rendered at twice its presentation resolution and downsampled
-   with Lanczos filtering for smoother edges. Pillow composes the typography
-   and recorded statistics over that actual ManimGL output. FFmpeg encodes the
-   finished film and the preview.
-
-`media/demo-data.json` contains the search result, limits and every sticker
-state. The reported elapsed time is measured during that run; it is not the
-length of the search chapter. Playback is deliberately slowed. Timings and
-encoded bytes can vary by machine; the moves, search counts and verified state
-sequence are deterministic. The solver's weak heuristic is suitable for shallow
-scrambles; the film makes no arbitrary-state speed claim.
-
-| Time | Demonstration |
+| Time | Content |
 | --- | --- |
-| 0–8 s | Exact scramble with the current turn labelled |
-| 8–14 s | Recorded IDA* result and explicit search limits |
-| 14–24 s | Execute the returned solution |
-| 24–32 s | Verified solved cube with a changing camera angle |
+| 0–8 s | Animate the scramble `R U F2 L` using the real sticker model |
+| 8–14 s | Show the bounded IDA* search result and limits |
+| 14–24 s | Animate the solver's returned moves |
+| 24–32 s | Verify the solved state and rotate the camera |
 
-## Validation
+`rubiks_sim.demo_data.build_demo()` runs the existing solver (depth limit 6, 100,000-node limit, no time limit). For the recorded example, it finds `L' F2 U' R'` after 551 nodes at search bound 4. The code verifies the result in both sticker and cubie representations.
+
+`scripts/cube_scene.py` reuses `AnimatedRubiksCube` and checks the model arrays plus all 54 rendered sticker centres and planes at each of the nine move boundaries. A failed check stops rendering. `scripts/render_demo.py` combines the actual ManimGL footage with captions and search data using Pillow and FFmpeg.
+
+`docs/media/demo-data.json` records the search and each sticker state. Search time depends on the machine; animation playback is intentionally slower. The current solver demonstrates **shallow-scramble solving**, not efficient arbitrary-state solving.
+
+## Check the outputs
 
 ```bash
-uv run --locked --extra demo --extra render pytest
+uv run --locked --extra render --extra demo pytest
 uv run --locked ruff check .
 uv run --locked ruff format --check .
 ffmpeg -v error -i docs/media/demo.mp4 -f null -
 ffmpeg -v error -i docs/media/preview.gif -f null -
-ffprobe -v error -show_streams -show_format docs/media/demo.mp4
 ```
 
-The completed run passed 108 tests, including the optional rendering-boundary
-tests, Ruff lint and formatting. If home is read-only, set `XDG_CACHE_HOME` and
-`MPLCONFIGDIR` to writable temporary locations before running the render tests.
-The new recording tests replay every boundary and compare the solver report
-with the CLI. Representative encoded frames were inspected for geometry,
-clipping, notation and legibility, including turns in progress and the final
-state. The original scene was also smoke-rendered after the extraction.
+The full MP4 is encoded at 1920 × 1080/30 FPS; the preview is 768 × 432/10 FPS. Encoded bytes and measured timings can differ between systems.
 
-The README animation is an eight-second loop of the opening scramble. The linked MP4 provides
-the full-resolution version. Rendered media is committed intentionally; do not
-commit scratch frames or temporary graphics caches.
+**When updating the media:** commit the generated MP4, GIF and JSON together. The README's MP4 URLs are pinned to a media commit, so update those links when the MP4 changes. Do not commit temporary frames or caches.
