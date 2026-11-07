@@ -51,9 +51,13 @@ Output videos go to `videos/` by default. The portfolio MP4 and looping preview 
 
 See [algorithm details](docs/ALGORITHMS.md) for models, validity checks and search assumptions.
 
-## Next steps
+## Planned roadmap
 
-Improve heuristics and deeper solving, evaluate a two-phase solver and refine the animation.
+- **Strengthen IDA* search:** investigate coordinate-based heuristics or pattern databases and benchmark deeper scrambles under reproducible depth, node and time limits.
+- **Evaluate a two-phase solver:** compare its correctness, search effort and implementation complexity with the current approach before claiming broader solving capability.
+- **Expand solver validation:** test a wider range of scramble depths, independently verify returned solutions and report search-limit outcomes separately from invalid or unsolvable states.
+- **Demonstrate harder scrambles when supported:** replace the four-move portfolio example with a genuinely computed, more challenging solve and measured search statistics; retain the shallow-scramble limitation until performance improves.
+- **Refine animation independently:** improve camera framing, move pacing and explanatory captions without coupling ManimGL rendering to the solver.
 
 ## Development
 
