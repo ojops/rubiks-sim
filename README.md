@@ -100,6 +100,8 @@ uv run ruff format --check .
 uv run python benchmarks/solver.py
 ```
 
-Dependencies are managed with `uv`; when changing them, commit both `pyproject.toml` and `uv.lock`. GitHub Actions runs code and rendering checks. See [coding conventions](docs/STYLE.md). ## License
+Dependencies are managed with `uv`; when changing them, commit both `pyproject.toml` and `uv.lock`. GitHub Actions runs code and rendering checks. See [coding conventions](docs/STYLE.md).
+
+## License
 
 [MIT licensed](LICENSE).
