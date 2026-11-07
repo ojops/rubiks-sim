@@ -1,10 +1,16 @@
 # Rubik's Cube Simulator
 
-Model, solve and animate Rubik's Cube moves in Python with [ManimGL](https://github.com/3b1b/manim).
+A Python project for modelling, solving and animating Rubik's Cube moves, with 3D visualisation using [ManimGL](https://github.com/3b1b/manim).
 
 [![Eight-second preview of the project's cube animation](docs/media/preview.gif)](https://raw.githubusercontent.com/ojops/rubiks-sim/8d14100ea3b86da000c6b40d0c78720cfe7ea9d1/docs/media/demo.mp4)
 
 *Preview: a real four-move scramble. [Watch the complete 32-second solve (MP4)](https://raw.githubusercontent.com/ojops/rubiks-sim/8d14100ea3b86da000c6b40d0c78720cfe7ea9d1/docs/media/demo.mp4) · [How the video is made](docs/DEMO.md).*
+
+## Overview
+
+This project explores how a Rubik's Cube can be represented, manipulated, solved and visualised. You can enter your own moves or generate a reproducible scramble, search for a solution within configurable limits, and optionally animate the result. It combines a detailed sticker model with a compact corner-and-edge representation to keep visualisation and search separate.
+
+The current solver reliably demonstrates **shallow scrambles**, rather than efficient arbitrary-state solving. The video above shows a real computed solution, verified against the cube model.
 
 ## Features
 
@@ -15,7 +21,7 @@ Model, solve and animate Rubik's Cube moves in Python with [ManimGL](https://git
 
 The solver is intended for **shallow scrambles**; efficient arbitrary-state solving is not yet supported.
 
-## Install
+## Requirements and Installation
 
 Requires Python 3.10 and [uv](https://docs.astral.sh/uv/). These commands target Ubuntu or WSL:
 
@@ -27,7 +33,7 @@ uv sync --locked
 
 To animate, install the ManimGL system prerequisites (including FFmpeg, Cairo and Pango), then run `uv sync --locked --extra render`. Headless Linux rendering may also require Xvfb and Mesa.
 
-## Run
+## Usage
 
 ```bash
 uv run rubiks-sim --length 20 --seed 42
@@ -51,13 +57,39 @@ Output videos go to `videos/` by default. The portfolio MP4 and looping preview 
 
 See [algorithm details](docs/ALGORITHMS.md) for models, validity checks and search assumptions.
 
-## Planned roadmap
+## Development Roadmap
+
+Development is incremental, with an emphasis on correct cube states, robust search and measured performance before more demanding demonstrations.
+
+### Planned
 
 - **Strengthen IDA* search:** investigate coordinate-based heuristics or pattern databases and benchmark deeper scrambles under reproducible depth, node and time limits.
 - **Evaluate a two-phase solver:** compare its correctness, search effort and implementation complexity with the current approach before claiming broader solving capability.
 - **Expand solver validation:** test a wider range of scramble depths, independently verify returned solutions and report search-limit outcomes separately from invalid or unsolvable states.
 - **Demonstrate harder scrambles when supported:** replace the four-move portfolio example with a genuinely computed, more challenging solve and measured search statistics; retain the shallow-scramble limitation until performance improves.
 - **Refine animation independently:** improve camera framing, move pacing and explanatory captions without coupling ManimGL rendering to the solver.
+
+## Project Structure
+
+```text
+rubiks-sim/
+├── src/rubiks_sim/
+│   ├── cube.py          # Sticker geometry and face turns
+│   ├── cubie.py         # Corner/edge states and validation
+│   ├── solver.py        # Bounded IDA* solver
+│   ├── sim.py           # ManimGL visualisation
+│   └── main.py          # Command-line interface
+├── scripts/             # Portfolio video and scene rendering
+├── benchmarks/          # Solver benchmarking
+├── tests/               # Cube, solver and rendering tests
+├── docs/                # Algorithms, demo and style notes
+│   └── media/           # Preview GIF, MP4 and recorded data
+├── pyproject.toml       # Project metadata and dependencies
+├── uv.lock              # Locked dependencies
+└── README.md
+```
+
+The `videos/` directory is created by rendering and is not tracked in Git.
 
 ## Development
 
@@ -68,4 +100,6 @@ uv run ruff format --check .
 uv run python benchmarks/solver.py
 ```
 
-GitHub Actions runs code and rendering checks. See [coding conventions](docs/STYLE.md). [MIT licensed](LICENSE).
+Dependencies are managed with `uv`; when changing them, commit both `pyproject.toml` and `uv.lock`. GitHub Actions runs code and rendering checks. See [coding conventions](docs/STYLE.md). ## License
+
+[MIT licensed](LICENSE).
