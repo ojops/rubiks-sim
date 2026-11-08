@@ -52,8 +52,8 @@ def prepare_patterns(
 ) -> tuple[bytes, bytes, bytes]:
     """
     Build 44,555 distance bytes once per process, with cooperative budget checks.
-    Tables are published only when complete. 
-    Temporary BFS queues and rank maps are released afterwards. 
+    Tables are published only when complete.
+    Temporary BFS queues and rank maps are released afterwards.
     No rendering imports, files, or network are needed.
     """
     global _TABLES
