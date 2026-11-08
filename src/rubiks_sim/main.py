@@ -34,6 +34,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--max-depth", type=int, default=10)
     parser.add_argument("--max-nodes", type=int, default=100_000)
     parser.add_argument("--time-limit", type=float, default=5.0)
+    parser.add_argument("--heuristic", choices=("basic", "pattern"), default="pattern")
     parser.add_argument("--render", action="store_true")
     parser.add_argument(
         "--low-quality", action="store_true", help="Render at Manim's low resolution"
@@ -57,6 +58,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.max_depth,
                 max_nodes=args.max_nodes,
                 time_limit=args.time_limit,
+                heuristic_name=args.heuristic,
             )
             report["search"] = asdict(result)
             if result.solution is not None:
