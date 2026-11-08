@@ -10,16 +10,18 @@ A Python project for modelling, solving and animating Rubik's Cube moves, with 3
 
 This project explores how a Rubik's Cube can be represented, manipulated, solved and visualised. You can enter your own moves or generate a reproducible scramble, search for a solution within configurable limits, and optionally animate the result. It combines a detailed sticker model with a compact corner-and-edge representation to keep visualisation and search separate.
 
-The current solver reliably demonstrates **shallow scrambles**, rather than efficient arbitrary-state solving. The video above shows a real computed solution, verified against the cube model.
+The bounded solver now uses exact-distance coordinate heuristics, with measured improvements on deterministic scrambles including an eight-move optimal solution. It still does not provide efficient arbitrary-state solving. The video above shows a real computed solution, verified against the cube model.
 
 ## Features
 
 - Exact sticker geometry and physically validated corner/edge states
 - Reproducible scrambles and IDA* search with configurable limits
+- Admissible corner/edge coordinate heuristics and a selectable original baseline
+- Controlled benchmarks reporting nodes, setup/search time and termination status
 - Solution verification against an independent sticker model
 - Command-line scrambling, solving and optional 3D rendering
 
-The solver is intended for **shallow scrambles**; efficient arbitrary-state solving is not yet supported.
+Solving remains bounded: some ten-move sequences and the benchmark twenty-move sequence still exhaust the node limit. Scramble length is not necessarily optimal solution depth.
 
 ## Requirements and Installation
 
@@ -40,6 +42,16 @@ uv run rubiks-sim --length 20 --seed 42
 uv run rubiks-sim --scramble "R U F" --solve
 uv run rubiks-sim --scramble "R U F" --solve --max-depth 8 --max-nodes 100000
 ```
+
+Compare the original heuristic with the default coordinate heuristic:
+
+```bash
+uv run rubiks-sim --scramble "R U F2 L" --solve --heuristic basic
+uv run rubiks-sim --scramble "R U F2 L" --solve --heuristic pattern
+uv run python benchmarks/solver.py --repeats 2
+```
+
+The default builds 44,555 bytes of distance tables once per process. CLI elapsed time and time limits include that setup; `setup_seconds` identifies it separately. Warm benchmark searches reuse the tables. See [measured comparisons](docs/BENCHMARKS.md), including cases that still reach limits.
 
 The CLI returns JSON, including search statistics and solution verification when solving. Run `uv run rubiks-sim --help` for all options.
 
@@ -63,11 +75,10 @@ Development is incremental, with an emphasis on correct cube states, robust sear
 
 ### Planned
 
-- **Strengthen IDA* search:** investigate coordinate-based heuristics or pattern databases and benchmark deeper scrambles under reproducible depth, node and time limits.
-- **Evaluate a two-phase solver:** compare its correctness, search effort and implementation complexity with the current approach before claiming broader solving capability.
-- **Expand solver validation:** test a wider range of scramble depths, independently verify returned solutions and report search-limit outcomes separately from invalid or unsolvable states.
-- **Demonstrate harder scrambles when supported:** replace the four-move portfolio example with a genuinely computed, more challenging solve and measured search statistics; retain the shallow-scramble limitation until performance improves.
-- **Refine animation independently:** improve camera framing, move pacing and explanatory captions without coupling ManimGL rendering to the solver.
+- **Extend measured search coverage:** use the implemented coordinate heuristic and baseline comparison to evaluate more seeds and deeper states; measure successor-generation cost before adding larger edge pattern databases.
+- **Evaluate a two-phase solver:** compare practical solving coverage, correctness and complexity against the measured bounded IDA* baseline. Optimal face-turn search and practical arbitrary-state solving have different goals.
+- **Demonstrate harder scrambles when supported:** select a consistently solvable case, independently verify it and genuinely render replacement media before changing the current portfolio film.
+- **Refine animation independently:** improve camera framing, move pacing and captions without coupling ManimGL rendering to search.
 
 ## Project Structure
 
@@ -77,10 +88,11 @@ rubiks-sim/
 │   ├── cube.py          # Sticker geometry and face turns
 │   ├── cubie.py         # Corner/edge states and validation
 │   ├── solver.py        # Bounded IDA* solver
+│   ├── patterns.py      # Exact coordinate distances and admissible bounds
 │   ├── sim.py           # ManimGL visualisation
 │   └── main.py          # Command-line interface
 ├── scripts/             # Portfolio video and scene rendering
-├── benchmarks/          # Solver benchmarking
+├── benchmarks/          # Controlled comparisons and recorded JSONL results
 ├── tests/               # Cube, solver and rendering tests
 ├── docs/                # Algorithms, demo and style notes
 │   └── media/           # Preview GIF, MP4 and recorded data
