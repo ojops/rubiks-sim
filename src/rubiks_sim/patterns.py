@@ -1,4 +1,4 @@
-"""Small exact-distance abstractions for admissible face-turn lower bounds."""
+"""Small exact distance abstractions for admissible face turn lower bounds."""
 
 from collections import deque
 from collections.abc import Callable
@@ -20,7 +20,7 @@ def orientation_index(values, base: int) -> int:
 
 
 def permutation_index(values) -> int:
-    """Rank an eight-corner permutation lexicographically (Lehmer code)."""
+    """Rank an eight corner permutation lexicographically (Lehmer code)."""
     return sum(
         sum(other < value for other in values[i + 1 :]) * _FACTORIALS[7 - i]
         for i, value in enumerate(values)
@@ -50,10 +50,11 @@ def _distances(goal, size, successors, encode, check):
 def prepare_patterns(
     check: Callable[[], None] | None = None,
 ) -> tuple[bytes, bytes, bytes]:
-    """Build 44,555 distance bytes once per process, with cooperative budget checks.
-
-    Tables are published only when complete. Temporary BFS queues and rank maps
-    are released afterwards. No rendering imports, files or network are needed.
+    """
+    Build 44,555 distance bytes once per process, with cooperative budget checks.
+    Tables are published only when complete. 
+    Temporary BFS queues and rank maps are released afterwards. 
+    No rendering imports, files, or network are needed.
     """
     global _TABLES
     if _TABLES is not None:
@@ -86,7 +87,7 @@ def prepare_patterns(
 
     corners = orientation_table(8, 3, 0)
     edges = orientation_table(12, 2, 2)
-    # A temporary lookup makes BFS cheaper; only the dense byte table is retained.
+    # A temporary lookup makes BFS cheaper, only the dense byte table is retained.
     ranks = {state: rank for rank, state in enumerate(permutations(range(8)))}
 
     def corner_successors(state):

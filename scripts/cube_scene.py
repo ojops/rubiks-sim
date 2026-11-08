@@ -36,7 +36,7 @@ class PortfolioCube(AnimatedRubiksCube):
                     + STICKER_OFFSET * self.cube.normals[index]
                 )
                 np.testing.assert_allclose(sticker.get_center(), centre, atol=1e-6)
-                # A square's three-dimensional span must be in its model face plane.
+                # A square's 3D span must be in its model face plane
                 offsets = sticker.get_points() - centre
                 np.testing.assert_allclose(
                     offsets @ self.cube.normals[index], 0, atol=1e-6
@@ -60,7 +60,7 @@ class PortfolioCube(AnimatedRubiksCube):
             boundary += 1
             self.check_geometry(report["states"][boundary])
         if not self.cube.is_solved():
-            raise RuntimeError("Rendered playback failed solution verification")
+            raise RuntimeError("Rendered playback failed solution verification.")
         self.wait(3)
         self.play(
             UpdateFromAlphaFunc(

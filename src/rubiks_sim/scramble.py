@@ -17,7 +17,7 @@ def generate_scramble(
         raise TypeError("length must be an integer")
 
     if length < 0:
-        raise ValueError("length must be non-negative")
+        raise ValueError("length must be non negative")
 
     rng = random.Random(seed)
 

@@ -11,7 +11,7 @@ SCRAMBLE = "R U F2 L"
 
 
 def build_demo() -> dict:
-    """Solve the fixed shallow scramble; retain every exact playback boundary."""
+    """Solve the fixed shallow scramble, retain every exact playback boundary."""
     cube = RubiksCube()
     scramble = parse_moves(SCRAMBLE)
     cube.apply_singmaster(scramble)
@@ -20,7 +20,7 @@ def build_demo() -> dict:
         raise RuntimeError(f"Demonstration search stopped: {result.status}")
     cube.apply_singmaster(result.solution)
     if not cube.is_solved() or not CubieState.from_cube(cube).is_solved():
-        raise RuntimeError("Independent solution verification failed")
+        raise RuntimeError("Independent solution verification failed.")
 
     playback = RubiksCube()
     states = []
@@ -42,5 +42,5 @@ def build_demo() -> dict:
         "limits": {"max_depth": 6, "max_nodes": 100_000, "time_limit": None},
         "verified": True,
         "states": states,
-        "note": "Shallow scramble; elapsed time is a machine-dependent recorded run.",
+        "note": "Shallow scramble, elapsed time is a machine dependent recorded run.",
     }

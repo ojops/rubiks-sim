@@ -1,4 +1,4 @@
-"""Admissibility, optimal depth, resource limits and independent verification."""
+"""Admissibility, optimal depth, resource limits, and independent verification."""
 
 import random
 from collections import deque

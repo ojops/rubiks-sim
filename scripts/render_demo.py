@@ -1,4 +1,4 @@
-"""Render a verified ManimGL cube film and a GitHub-compatible preview."""
+"""Render a verified ManimGL cube film and a GitHub compatible preview."""
 
 import argparse
 import os
@@ -54,7 +54,7 @@ def annotations(t, report, cube_image):
         t,
         DURATION,
         BLUE,
-        "Shallow-scramble demonstration. Playback is slowed; search time is a recorded measurement.",
+        "Shallow scramble demonstration. Playback is slowed, search time is a recorded measurement.",
     )
     image.paste(cube_image, (80, 225))
     label(

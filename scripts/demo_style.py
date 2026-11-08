@@ -1,4 +1,4 @@
-"""Small, self-contained Pillow/FFmpeg presentation helpers (optional demo extra)."""
+"""Small, self contained Pillow/FFmpeg presentation helpers (optional demo extra)."""
 
 import json
 import shutil
@@ -28,7 +28,7 @@ def font(size: int, bold: bool = False, mono: bool = False):
         return ImageFont.truetype(name, size)
     except OSError as error:
         raise RuntimeError(
-            "Install DejaVu fonts (Ubuntu: fonts-dejavu-core)"
+            "Install DejaVu fonts (Ubuntu: fonts-dejavu-core)."
         ) from error
 
 
@@ -37,7 +37,7 @@ def text(draw, xy, value, size=28, fill=INK, *, bold=False, mono=False, anchor="
     face = font(size, bold, mono)
     box = draw.textbbox(xy, str(value), font=face, anchor=anchor)
     if box[0] < 0 or box[1] < 0 or box[2] > WIDTH or box[3] > HEIGHT:
-        raise ValueError(f"Text outside frame: {value!r}, {box}")
+        raise ValueError(f"Text outside frame: {value!r}, {box}.")
     draw.text(xy, str(value), font=face, fill=fill, anchor=anchor)
 
 
@@ -142,9 +142,9 @@ def save_data(path: Path, data: dict) -> None:
 
 
 def encode(frame, output: Path, duration: int) -> None:
-    """Stream full-HD RGB frames to an H.264 MP4 without intermediate images."""
+    """Stream full HD RGB frames to an MP4 (H.264) without intermediate images."""
     if shutil.which("ffmpeg") is None:
-        raise RuntimeError("Install FFmpeg with the libx264 encoder")
+        raise RuntimeError("Install FFmpeg with the libx264 encoder.")
     command = [
         "ffmpeg",
         "-v",
@@ -184,7 +184,7 @@ def encode(frame, output: Path, duration: int) -> None:
         finally:
             process.stdin.close()
         if process.wait() != 0:
-            raise RuntimeError("FFmpeg encoding failed")
+            raise RuntimeError("FFmpeg encoding failed.")
 
 
 def preview(video: Path, output: Path, start: float, duration: float) -> None:

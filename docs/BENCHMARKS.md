@@ -7,9 +7,9 @@ uv sync --locked
 uv run python benchmarks/solver.py --repeats 2
 ```
 
-The [recorded JSONL](../benchmarks/results/coordinate-heuristic.jsonl) contains every scramble, seed, limit, solution, verification result, bound, node count and timing. This run used Python 3.10.22 on Linux-6.18.57-x86_64-with-glibc2.41. Each solve had depth 10, 100,000 visited nodes and five seconds. Both heuristics used the same cubie model, move order and pruning. Two repetitions alternate heuristic order; times below are medians, not statistical performance estimates.
+The [recorded JSONL](../benchmarks/results/coordinate-heuristic.jsonl) contains every scramble, seed, limit, solution, verification result, bound, node count, and timing. This run used Python 3.10.22 on Linux-6.18.57-x86_64-with-glibc2.41 (through WSL). Each solve had depth 10, 100,000 visited nodes and five seconds. Both heuristics used the same cubie model, move order, and pruning. Two repetitions alternate heuristic order, times below are medians, not statistical performance estimates.
 
-Cold pattern-table construction took **0.690 seconds**, retaining 44,555 distance bytes. It is reported separately before the benchmark's warm searches; normal `solve` and CLI budgets include cold setup. A separate CLI process rebuilds its tables. The basic heuristic needs no table setup.
+Cold pattern table construction took **0.690 seconds**, retaining 44,555 distance bytes. It is reported separately before the benchmark's warm searches, normal `solve` and CLI budgets include cold setup. A separate CLI process rebuilds its tables. The basic heuristic needs no table setup.
 
 | Scramble length / seed | Basic status | Basic nodes | Basic seconds | Pattern status | Pattern nodes | Pattern seconds | Solution depth |
 | --- | --- | ---: | ---: | --- | ---: | ---: | ---: |
@@ -24,8 +24,8 @@ Cold pattern-table construction took **0.690 seconds**, retaining 44,555 distanc
 | 10 / 1 | node_limit | 100,000 | 0.9532 | node_limit | 100,000 | 1.5428 | — |
 | 20 / 42 | node_limit | 100,000 | 0.9657 | node_limit | 100,000 | 1.5560 | — |
 
-All returned solutions were independently replayed on the sticker model. Where both solvers finished, optimal solution depths agree. Seven- and eight-move generated sequences can simplify to shorter solutions; input length is **not** search depth.
+All returned solutions were independently replayed on the sticker model. Where both solvers finished, optimal solution depths agree. Seven and eight move generated sequences can simplify to shorter solutions, input length is **not** search depth.
 
-The six-move case reduced visited nodes from 81,213 to 1,777 (about 46 times fewer) and warm time from about 0.76 to 0.03 seconds. The pattern solver also completed two seven-move optimal solutions and one eight-move optimal solution that exhausted the original solver's node budget. These are measured cases, not a guarantee for all scrambles at those depths.
+The six move case reduced visited nodes from 81,213 to 1,777 (about 46 times fewer) and warm time from about 0.76 to 0.03 seconds. The pattern solver also completed two seven move optimal solutions and one eight move optimal solution that exhausted the original solver's node budget. These are measured cases, not a guarantee for all scrambles at those depths.
 
-The ten-move seed-1 and twenty-move seed-42 cases still exhausted both node budgets. Pattern evaluation made those 100,000-node failures slower despite reaching higher search bounds. Cold setup also makes tiny one-off solves slower than their warm numbers suggest. Timings depend on hardware, interpreter and machine load; node counts are deterministic under nonbinding time limits. No arbitrary-state solving or rendering-performance claim follows from these results.
+The ten move seed-1 and twenty move seed-42 cases still exhausted both node budgets. Pattern evaluation made those 100,000 node failures slower despite reaching higher search bounds. Cold setup also makes tiny one off solves slower than their warm numbers suggest. Timings depend on hardware, interpreter and machine load, node counts are deterministic under nonbinding time limits.

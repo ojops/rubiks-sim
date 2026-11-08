@@ -32,7 +32,7 @@ def main():
                 "distance_bytes": sum(map(len, tables)),
                 "python": platform.python_version(),
                 "platform": platform.platform(),
-                "note": "Following solves reuse tables; normal CLI time limits include cold setup.",
+                "note": "Following solves reuse tables and normal CLI time limits include cold setup.",
             }
         )
     )
@@ -53,7 +53,7 @@ def main():
         cube.apply_singmaster(moves)
         state = CubieState.from_cube(cube)
         for repeat in range(args.repeats):
-            # Alternate order to reduce systematic timing-order effects.
+            # Alternate order to reduce systematic timing order effects
             names = ("basic", "pattern") if repeat % 2 == 0 else ("pattern", "basic")
             for name in names:
                 result = solve(
@@ -70,7 +70,7 @@ def main():
                     verified = playback.is_solved()
                     if not verified:
                         raise RuntimeError(
-                            "Benchmark solution failed sticker verification"
+                            "Benchmark solution failed sticker verification."
                         )
                 print(
                     json.dumps(
