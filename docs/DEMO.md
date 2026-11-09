@@ -24,7 +24,13 @@ Use `--output-dir /path/to/output` to change the destination. Temporary ManimGL 
 | 14–24 s | Animate the solver's returned moves |
 | 24–32 s | Verify the solved state and rotate the camera |
 
-`rubiks_sim.demo_data.build_demo()` runs the existing solver (depth limit 6, 100,000 node limit, no time limit). The committed recording used the original cubie count heuristic: it found `L' F2 U' R'` after 551 nodes at search bound 4. This change preserves the existing MP4/GIF/JSON snapshot. Regeneration now uses the default coordinate heuristic and records its actual statistics (55 nodes on the same scramble), replacing files in the chosen output directory. Reproduce the historical search with `uv run rubiks-sim --scramble "R U F2 L" --solve --heuristic basic`. The code verifies the result in both sticker and cubie representations.
+`rubiks_sim.demo_data.build_demo()` uses depth limit 6, a 100,000-node budget, and no time limit. The committed film used the original count heuristic, finding `L' F2 U' R'` after 551 nodes at bound 4. Regeneration uses the default coordinate heuristic, records its current statistics (55 nodes on this scramble), and replaces files in the chosen output directory. Both representations verify the solution.
+
+Reproduce the historical search with:
+
+```bash
+uv run rubiks-sim --scramble "R U F2 L" --solve --heuristic basic
+```
 
 `scripts/cube_scene.py` reuses `AnimatedRubiksCube` and checks the model arrays plus all 54 rendered sticker centres and planes at each of the nine move boundaries. A failed check stops rendering. `scripts/render_demo.py` combines the actual ManimGL footage with captions and search data using Pillow and FFmpeg.
 

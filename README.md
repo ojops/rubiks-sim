@@ -1,6 +1,6 @@
 # Rubik's Cube Simulator
 
-A Python project for modelling, solving and animating Rubik's Cube moves, with 3D visualisation using [ManimGL](https://github.com/3b1b/manim).
+A Python project for modelling, solving, and animating Rubik's Cube moves, with optional 3D visualisation using [ManimGL](https://github.com/3b1b/manim).
 
 [![Eight-second preview of the project's cube animation](docs/media/preview.gif)](https://raw.githubusercontent.com/ojops/rubiks-sim/8d14100ea3b86da000c6b40d0c78720cfe7ea9d1/docs/media/demo.mp4)
 
@@ -8,9 +8,9 @@ A Python project for modelling, solving and animating Rubik's Cube moves, with 3
 
 ## Overview
 
-This project explores how a Rubik's Cube can be represented, manipulated, solved and visualised. You can enter your own moves or generate a reproducible scramble, search for a solution within configurable limits, and optionally animate the result. It combines a detailed sticker model with a compact corner and edge representation to keep visualisation and search separate.
+Enter moves or generate a reproducible scramble, search for a solution within configurable limits, and animate the result. A sticker model handles geometry, while a compact corner and edge model supports search.
 
-The bounded solver now uses exact distance coordinate heuristics, with measured improvements on deterministic scrambles including an eight move optimal solution. It is yet to provide efficient arbitrary state solving. The video above shows a real computed solution, verified against the cube model.
+The bounded IDA* solver uses exact coordinate distances as lower bounds. [Recorded successes](docs/BENCHMARKS.md) reach an optimal depth of eight moves, but it does not efficiently solve arbitrary states. The video shows a computed solution verified against the cube model.
 
 ## Features
 
@@ -33,7 +33,7 @@ cd rubiks-sim
 uv sync --locked
 ```
 
-To animate, install the ManimGL system prerequisites (including FFmpeg, Cairo and Pango), then run `uv sync --locked --extra render`. Headless Linux rendering may also require Xvfb and Mesa.
+To animate, install the ManimGL system prerequisites (including FFmpeg, Cairo, and Pango), then run `uv sync --locked --extra render`. Headless Linux rendering may also require Xvfb, xauth, and Mesa.
 
 ## Usage
 
@@ -51,7 +51,7 @@ uv run rubiks-sim --scramble "R U F2 L" --solve --heuristic pattern
 uv run python benchmarks/solver.py --repeats 2
 ```
 
-The default builds 44,555 bytes of distance tables once per process. CLI elapsed time and time limits include that setup, `setup_seconds` identifies it separately. Warm benchmark searches reuse the tables. See [measured comparisons](docs/BENCHMARKS.md), including cases that still reach limits.
+The default heuristic builds tables once per process. Setup counts towards CLI elapsed time and time limits, and is reported as `setup_seconds`. See [benchmarks](docs/BENCHMARKS.md) for cold setup, warm searches, memory use, and cases that still reach limits.
 
 The CLI returns JSON, including search statistics and solution verification when solving. Run `uv run rubiks-sim --help` for all options.
 
@@ -61,13 +61,13 @@ Render a scramble followed by its computed solution:
 uv run --extra render rubiks-sim --scramble "R U F" --solve --render --low-quality
 ```
 
-Output videos go to `videos/` by default. The portfolio MP4 and looping preview are generated separately, see [demo instructions](docs/DEMO.md).
+Output videos go to `videos/` by default. See [demo instructions](docs/DEMO.md) to generate the portfolio MP4 and looping preview.
 
 ## Implementation
 
 `src/rubiks_sim/cube.py` tracks stickers, `cubie.py` tracks corners and edges, `solver.py` performs bounded IDA* search, and `sim.py` handles animation. Moves use `U D F B R L`, with optional `'` or `2`. Reaching a search limit **does not** mean a cube is unsolvable.
 
-See [algorithm details](docs/ALGORITHMS.md) for models, validity checks and search assumptions.
+See [algorithm details](docs/ALGORITHMS.md) for models, validity checks, API behavior, and search assumptions.
 
 ## Development Roadmap
 
@@ -75,10 +75,10 @@ Development is incremental, with an emphasis on correct cube states, robust sear
 
 ### Planned
 
-- **Extend measured search coverage:** use the implemented coordinate heuristic and baseline comparison to evaluate more seeds and deeper states, measure successor generation cost before adding larger edge pattern databases.
-- **Evaluate a two phase solver:** compare practical solving coverage, correctness, and complexity against the measured bounded IDA* baseline. Optimal face turn search and  arbitrary state solving have different goals.
-- **Demonstrate harder scrambles when supported:** select a consistently solvable case, independently verify it and genuinely render replacement media before changing the current portfolio film.
-- **Refine animation independently:** improve camera framing, move pacing and captions without coupling ManimGL rendering to search.
+- **Extend measured search coverage:** test more seeds and deeper states. Measure successor generation cost before adding larger edge pattern databases.
+- **Evaluate a two-phase solver:** compare coverage, correctness, and complexity with bounded IDA*. Optimal face-turn search and practical arbitrary-state solving have different goals.
+- **Demonstrate harder scrambles when supported:** select a reliable case, independently verify it, and render replacement media before updating the portfolio film.
+- **Refine animation independently:** improve framing, pacing, and captions without coupling rendering to search.
 
 ## Project Structure
 
@@ -93,8 +93,8 @@ rubiks-sim/
 │   └── main.py          # Command line interface
 ├── scripts/             # Portfolio video and scene rendering
 ├── benchmarks/          # Controlled comparisons and recorded JSONL results
-├── tests/               # Cube, solver and, rendering tests
-├── docs/                # Algorithms, demo, and style notes
+├── tests/               # Cube, solver, and rendering tests
+├── docs/                # Algorithms, benchmarks, demo, and style notes
 │   └── media/           # Preview GIF, MP4, and recorded data
 ├── pyproject.toml       # Project metadata and dependencies
 ├── uv.lock              # Locked dependencies
@@ -112,7 +112,7 @@ uv run ruff format --check .
 uv run python benchmarks/solver.py
 ```
 
-Dependencies are managed with `uv`, when changing them, commit both `pyproject.toml` and `uv.lock`. GitHub Actions runs code and rendering checks. See [coding conventions](docs/STYLE.md).
+When changing dependencies, commit both `pyproject.toml` and `uv.lock`. GitHub Actions runs code and rendering checks. See [coding conventions](docs/STYLE.md).
 
 ## License
 
