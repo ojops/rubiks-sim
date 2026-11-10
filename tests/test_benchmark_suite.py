@@ -12,9 +12,10 @@ suite = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(suite)
 
 
-def row(name, seed, status="solved", nodes=100, depth=4):
+def row(name, seed, status="solved", nodes=100, depth=4, repeat=1):
     return {
         "heuristic_name": name,
+        "repeat": repeat,
         "length": 4,
         "seed": seed,
         "status": status,
@@ -47,8 +48,8 @@ def test_one_failed_repetition_excludes_entire_case_from_ratios():
     rows = [
         row("basic", 0),
         row("pattern", 0),
-        row("basic", 0, "time_limit"),
-        row("pattern", 0),
+        row("basic", 0, "time_limit", repeat=2),
+        row("pattern", 0, repeat=2),
     ]
     assert suite.summarize(rows)["paired_node_ratio"]["count"] == 0
 
@@ -56,3 +57,17 @@ def test_one_failed_repetition_excludes_entire_case_from_ratios():
 def test_disagreeing_solution_depths_are_rejected():
     with pytest.raises(ValueError, match="optimal depth"):
         suite.summarize([row("basic", 0, depth=4), row("pattern", 0, depth=5)])
+
+
+@pytest.mark.parametrize(
+    "rows",
+    [
+        [],
+        [row("basic", 0)],
+        [row("basic", 0), row("pattern", 0, repeat=2)],
+        [row("basic", 0), row("basic", 0), row("pattern", 0)],
+    ],
+)
+def test_incomplete_or_duplicate_measurements_are_rejected(rows):
+    with pytest.raises(ValueError):
+        suite.summarize(rows)

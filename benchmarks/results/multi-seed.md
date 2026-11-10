@@ -8,132 +8,40 @@ Each case/heuristic runs in a fresh process; repeated warm solves reuse its tabl
 
 | Length / seed | Basic statuses | Pattern statuses | Basic median nodes | Pattern median nodes | Basic / pattern warm seconds | Basic / pattern peak RSS MiB |
 |---|---|---|---:|---:|---:|---:|
-| 4 / 0 | solved: 2 | solved: 2 | 453 | 29 | 0.0068 / 0.0007 | 25.2 / 35.2 |
-| 4 / 1 | solved: 2 | solved: 2 | 56 | 56 | 0.0012 / 0.0012 | 25.2 / 35.2 |
-| 4 / 2 | solved: 2 | solved: 2 | 213 | 89 | 0.0046 / 0.0020 | 25.3 / 35.2 |
-| 4 / 3 | solved: 2 | solved: 2 | 316 | 69 | 0.0076 / 0.0014 | 25.3 / 35.2 |
-| 4 / 4 | solved: 2 | solved: 2 | 643 | 156 | 0.0124 / 0.0040 | 25.3 / 35.2 |
-| 6 / 0 | solved: 2 | solved: 2 | 81,213 | 1,777 | 1.2912 / 0.0360 | 25.3 / 35.2 |
-| 6 / 1 | solved: 2 | solved: 2 | 646 | 163 | 0.0311 / 0.0044 | 25.3 / 35.2 |
-| 6 / 2 | solved: 2 | solved: 2 | 46,560 | 3,720 | 0.5992 / 0.0790 | 25.3 / 35.2 |
-| 6 / 3 | solved: 2 | solved: 2 | 3,884 | 814 | 0.0555 / 0.0184 | 25.3 / 35.2 |
-| 6 / 4 | solved: 2 | solved: 2 | 76,958 | 5,790 | 1.1422 / 0.1202 | 25.3 / 35.2 |
-| 8 / 0 | solved: 2 | solved: 2 | 44,571 | 243 | 0.6514 / 0.0050 | 25.3 / 35.2 |
-| 8 / 1 | node_limit: 2 | solved: 2 | 100,000 | 13,308 | 1.4789 / 0.3158 | 25.3 / 35.2 |
-| 8 / 2 | node_limit: 2 | solved: 2 | 100,000 | 12,585 | 1.2849 / 0.2619 | 25.3 / 35.2 |
-| 8 / 3 | node_limit: 2 | solved: 2 | 100,000 | 13,892 | 1.2634 / 0.2990 | 25.3 / 35.2 |
-| 8 / 4 | node_limit: 2 | time_limit: 2 | 100,000 | 96,022 | 1.2347 / 2.0000 | 25.3 / 35.2 |
-| 10 / 0 | node_limit: 2 | solved: 2 | 100,000 | 49,506 | 1.2465 / 1.0076 | 25.3 / 35.2 |
-| 10 / 1 | node_limit: 2 | time_limit: 2 | 100,000 | 84,233 | 1.2576 / 2.0001 | 25.3 / 35.2 |
-| 10 / 2 | node_limit: 2 | time_limit: 2 | 100,000 | 93,330 | 1.2874 / 2.0000 | 25.3 / 35.2 |
-| 10 / 3 | node_limit: 2 | time_limit: 2 | 100,000 | 96,774 | 1.2555 / 2.0000 | 25.3 / 35.2 |
-| 10 / 4 | node_limit: 2 | time_limit: 2 | 100,000 | 77,875 | 1.4246 / 2.0000 | 25.3 / 35.2 |
-| 20 / 0 | node_limit: 2 | time_limit: 2 | 100,000 | 84,265 | 1.2768 / 2.0000 | 25.3 / 35.2 |
-| 20 / 1 | node_limit: 2 | time_limit: 2 | 100,000 | 87,809 | 1.2891 / 2.0000 | 25.3 / 35.2 |
-| 20 / 2 | node_limit: 2 | time_limit: 2 | 100,000 | 91,852 | 1.4482 / 2.0000 | 25.3 / 35.2 |
-| 20 / 3 | node_limit: 2 | time_limit: 2 | 100,000 | 84,795 | 1.2693 / 2.0002 | 25.3 / 35.2 |
-| 20 / 4 | node_limit: 2 | time_limit: 2 | 100,000 | 96,792 | 1.4480 / 2.0003 | 25.3 / 35.2 |
+| 4 / 0 | solved: 2 | solved: 2 | 453 | 29 | 0.0061 / 0.0008 | 24.7 / 35.3 |
+| 4 / 1 | solved: 2 | solved: 2 | 56 | 56 | 0.0011 / 0.0013 | 24.7 / 35.3 |
+| 4 / 2 | solved: 2 | solved: 2 | 213 | 89 | 0.0033 / 0.0020 | 24.7 / 35.3 |
+| 4 / 3 | solved: 2 | solved: 2 | 316 | 69 | 0.0065 / 0.0016 | 24.7 / 35.3 |
+| 4 / 4 | solved: 2 | solved: 2 | 643 | 156 | 0.0231 / 0.0038 | 24.7 / 35.3 |
+| 6 / 0 | solved: 2 | solved: 2 | 81,213 | 1,777 | 1.0655 / 0.0399 | 24.7 / 35.3 |
+| 6 / 1 | solved: 2 | solved: 2 | 646 | 163 | 0.0376 / 0.0081 | 24.7 / 35.3 |
+| 6 / 2 | solved: 2 | solved: 2 | 46,560 | 3,720 | 0.9332 / 0.1834 | 24.7 / 35.3 |
+| 6 / 3 | solved: 2 | solved: 2 | 3,884 | 814 | 0.0726 / 0.0180 | 24.7 / 35.3 |
+| 6 / 4 | solved: 2 | solved: 2 | 76,958 | 5,790 | 1.0570 / 0.1461 | 24.7 / 35.3 |
+| 8 / 0 | solved: 2 | solved: 2 | 44,571 | 243 | 0.6014 / 0.0070 | 24.7 / 35.3 |
+| 8 / 1 | node_limit: 2 | solved: 2 | 100,000 | 13,308 | 1.7603 / 0.4809 | 24.7 / 35.3 |
+| 8 / 2 | node_limit: 2 | solved: 2 | 100,000 | 12,585 | 1.4921 / 0.2719 | 24.7 / 35.3 |
+| 8 / 3 | node_limit: 2 | solved: 2 | 100,000 | 13,892 | 1.6556 / 0.3113 | 24.7 / 35.3 |
+| 8 / 4 | node_limit: 2 | time_limit: 2 | 100,000 | 88,360 | 1.5007 / 2.0000 | 24.7 / 35.3 |
+| 10 / 0 | node_limit: 2 | solved: 2 | 100,000 | 49,506 | 1.3645 / 1.1343 | 24.7 / 35.3 |
+| 10 / 1 | node_limit: 2 | time_limit: 2 | 100,000 | 60,395 | 1.4228 / 2.0001 | 24.7 / 35.3 |
+| 10 / 2 | node_limit: 2 | time_limit: 2 | 100,000 | 63,412 | 1.3393 / 2.0000 | 24.7 / 35.3 |
+| 10 / 3 | node_limit: 2 | time_limit: 2 | 100,000 | 91,528 | 1.3447 / 2.0001 | 24.7 / 35.3 |
+| 10 / 4 | node_limit: 2 | time_limit: 2 | 100,000 | 90,204 | 1.2736 / 2.0001 | 24.7 / 35.3 |
+| 20 / 0 | node_limit: 2 | time_limit: 2 | 100,000 | 90,255 | 1.3737 / 2.0001 | 24.7 / 35.3 |
+| 20 / 1 | node_limit: 2 | time_limit: 2 | 100,000 | 94,427 | 1.4117 / 2.0000 | 24.7 / 35.3 |
+| 20 / 2 | node_limit: 2 | time_limit: 2 | 100,000 | 92,066 | 1.3133 / 2.0000 | 24.7 / 35.3 |
+| 20 / 3 | node_limit: 2 | time_limit: 2 | 100,000 | 92,630 | 1.3408 / 2.0001 | 24.7 / 35.3 |
+| 20 / 4 | node_limit: 2 | time_limit: 2 | 100,000 | 86,536 | 1.4167 / 2.0003 | 24.7 / 35.3 |
 
 ## Interpretation
 
-```json
-{
-  "basic": {
-    "attempts": 50,
-    "statuses": {
-      "solved": 22,
-      "node_limit": 28
-    },
-    "median_seconds_all_attempts": 1.2429681645000983,
-    "median_seconds_solved": 0.031073567499788624,
-    "max_process_peak_rss_bytes": 26570752
-  },
-  "pattern": {
-    "attempts": 50,
-    "statuses": {
-      "solved": 30,
-      "time_limit": 20
-    },
-    "median_seconds_all_attempts": 0.2990316619998339,
-    "median_seconds_solved": 0.01838948399995388,
-    "max_process_peak_rss_bytes": 36937728
-  },
-  "both_solved_cases": [
-    {
-      "length": 4,
-      "seed": 0,
-      "node_ratio_basic_over_pattern": 15.620689655172415,
-      "warm_time_ratio_basic_over_pattern": 10.089944276249017
-    },
-    {
-      "length": 4,
-      "seed": 1,
-      "node_ratio_basic_over_pattern": 1.0,
-      "warm_time_ratio_basic_over_pattern": 1.031830699957812
-    },
-    {
-      "length": 4,
-      "seed": 2,
-      "node_ratio_basic_over_pattern": 2.393258426966292,
-      "warm_time_ratio_basic_over_pattern": 2.332900235109246
-    },
-    {
-      "length": 4,
-      "seed": 3,
-      "node_ratio_basic_over_pattern": 4.579710144927536,
-      "warm_time_ratio_basic_over_pattern": 5.402179349826692
-    },
-    {
-      "length": 4,
-      "seed": 4,
-      "node_ratio_basic_over_pattern": 4.121794871794871,
-      "warm_time_ratio_basic_over_pattern": 3.071783441916684
-    },
-    {
-      "length": 6,
-      "seed": 0,
-      "node_ratio_basic_over_pattern": 45.702307259426,
-      "warm_time_ratio_basic_over_pattern": 35.90013959224946
-    },
-    {
-      "length": 6,
-      "seed": 1,
-      "node_ratio_basic_over_pattern": 3.96319018404908,
-      "warm_time_ratio_basic_over_pattern": 7.132775944645938
-    },
-    {
-      "length": 6,
-      "seed": 2,
-      "node_ratio_basic_over_pattern": 12.516129032258064,
-      "warm_time_ratio_basic_over_pattern": 7.584163413361187
-    },
-    {
-      "length": 6,
-      "seed": 3,
-      "node_ratio_basic_over_pattern": 4.771498771498772,
-      "warm_time_ratio_basic_over_pattern": 3.01969100928682
-    },
-    {
-      "length": 6,
-      "seed": 4,
-      "node_ratio_basic_over_pattern": 13.29153713298791,
-      "warm_time_ratio_basic_over_pattern": 9.504862515149899
-    },
-    {
-      "length": 8,
-      "seed": 0,
-      "node_ratio_basic_over_pattern": 183.41975308641975,
-      "warm_time_ratio_basic_over_pattern": 129.49848024355558
-    }
-  ],
-  "paired_node_ratio": {
-    "count": 11,
-    "median": 4.771498771498772,
-    "min": 1.0,
-    "max": 183.41975308641975
-  }
-}
-```
+| Heuristic | Cases solved in every repetition | Attempt outcomes |
+|---|---:|---|
+| basic | 11/25 | {'solved': 22, 'node_limit': 28} |
+| pattern | 15/25 | {'solved': 30, 'time_limit': 20} |
+
+Paired node ratios (basic / pattern): {'count': 11, 'median': 4.771498771498772, 'min': 1.0, 'max': 183.41975308641975}. Full per-case ratios remain in the JSON report.
 
 Ratios exclude any case with a failed repetition: they describe the jointly solved subset, not overall speedup. Failures are censored by the declared budgets, not evidence of unsolvability. Runtime medians over all attempts mix successes and budget exhaustion.
 

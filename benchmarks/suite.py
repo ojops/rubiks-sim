@@ -8,7 +8,7 @@ import resource
 import statistics
 import subprocess
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import asdict
 from pathlib import Path
 from time import perf_counter
@@ -72,11 +72,31 @@ def worker(args):
 
 def summarize(records):
     """Keep failures in coverage; ratios use only pairs solved in every repeat."""
+    if not records:
+        raise ValueError("Benchmark records must not be empty")
+    cases = defaultdict(lambda: defaultdict(list))
+    for row in records:
+        if row["heuristic_name"] not in ("basic", "pattern"):
+            raise ValueError("Unknown heuristic in benchmark records")
+        cases[row["length"], row["seed"]][row["heuristic_name"]].append(row)
+    for groups in cases.values():
+        if set(groups) != {"basic", "pattern"}:
+            raise ValueError("Every case requires both heuristics")
+        repeats = [[r["repeat"] for r in groups[name]] for name in ("basic", "pattern")]
+        if any(len(set(ids)) != len(ids) for ids in repeats) or set(repeats[0]) != set(
+            repeats[1]
+        ):
+            raise ValueError("Every case requires matching, unique repetitions")
     summary = {}
     for name in ("basic", "pattern"):
         rows = [r for r in records if r["heuristic_name"] == name]
         solved = [r for r in rows if r["status"] == "solved"]
         summary[name] = {
+            "cases": len(cases),
+            "cases_solved_every_repeat": sum(
+                all(r["status"] == "solved" for r in groups[name])
+                for groups in cases.values()
+            ),
             "attempts": len(rows),
             "statuses": dict(Counter(r["status"] for r in rows)),
             "median_seconds_all_attempts": statistics.median(
@@ -172,9 +192,15 @@ def markdown(report):
         "",
         "## Interpretation",
         "",
-        "```json",
-        json.dumps(report["summary"], indent=2),
-        "```",
+        "| Heuristic | Cases solved in every repetition | Attempt outcomes |",
+        "|---|---:|---|",
+        *[
+            f"| {name} | {item['cases_solved_every_repeat']}/{item['cases']} | {item['statuses']} |"
+            for name, item in report["summary"].items()
+            if name in ("basic", "pattern")
+        ],
+        "",
+        f"Paired node ratios (basic / pattern): {report['summary']['paired_node_ratio']}. Full per-case ratios remain in the JSON report.",
         "",
         "Ratios exclude any case with a failed repetition: they describe the jointly solved subset, not overall speedup. Failures are censored by the declared budgets, not evidence of unsolvability. Runtime medians over all attempts mix successes and budget exhaustion.",
         "",
