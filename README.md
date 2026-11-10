@@ -12,6 +12,38 @@ Enter moves or generate a reproducible scramble, search for a solution within co
 
 The bounded IDA* solver uses exact coordinate distances as lower bounds. [Recorded successes](docs/BENCHMARKS.md) reach an optimal depth of eight moves, but it does not efficiently solve arbitrary states. The video shows a computed solution verified against the cube model.
 
+## Reproducible benchmark evidence
+
+The [25-case multi-seed benchmark](benchmarks/results/multi-seed.md) compares the original `basic` bound with the `pattern` bound over lengths 4/6/8/10/20 and seeds 0–4, with two repetitions each. Under depth 10, 100,000-node and two-second **warm-search** budgets:
+
+- Basic solved **11/25** cases in both repetitions; pattern solved **15/25**.
+- Across the **11 cases solved by both**, the median basic/pattern node ratio was **4.77×**, ranging from **1.00× to 183.42×**. This is a conditional node-count comparison, not an overall runtime speedup.
+- The original six-move seed-0 result reproduced: **81,213 vs 1,777 nodes (45.7×)**. It is one case, not a typical improvement claim.
+- Every returned solution passed independent sticker-model verification. Unfinished searches remain in the report; a time/node limit is not proof of unsolvability.
+
+Reproduce after installation:
+
+```bash
+uv run python benchmarks/suite.py
+```
+
+This takes a few minutes and writes JSON plus a Markdown report to `benchmarks/results/multi-seed.*`. Each case/heuristic uses an isolated process, reporting cold table setup separately, warm runtime, nodes, termination status and peak process RSS. RSS includes Python, NumPy, table construction and repeated searches; it is not incremental search memory. Timings and time-limit outcomes vary by machine. This runner uses Unix `resource` and targets Linux/macOS.
+
+For a quick smoke run without overwriting the committed report:
+
+```bash
+uv run python benchmarks/suite.py --lengths 4 --seeds 0 --repeats 1 --output /tmp/cube-smoke.json
+```
+
+### What to inspect
+
+- `cube.py` / `cubie.py`: independent sticker geometry and compact search state, including physical validity constraints.
+- `solver.py` / `patterns.py`: bounded IDA*, the original baseline, and admissible coordinate heuristics.
+- `benchmarks/suite.py`: fixed seed grid, isolated workers, explicit budgets and failure-aware summaries.
+- `tests/test_benchmark_suite.py`: failure censoring and agreement of returned optimal depths; existing model/search tests check move correctness and heuristics.
+
+The new suite measures the existing solver; it does not introduce a new heuristic or claim efficient arbitrary-state solving. The older [10-case report](docs/BENCHMARKS.md) uses a five-second budget and should not be mixed with the new two-second measurements.
+
 ## Features
 
 - Exact sticker geometry and physically validated corner/edge states
@@ -75,7 +107,7 @@ Development is incremental, with an emphasis on correct cube states, robust sear
 
 ### Planned
 
-- **Extend measured search coverage:** test more seeds and deeper states. Measure successor generation cost before adding larger edge pattern databases.
+- **Extend measured search coverage beyond the completed 25-case suite:** test more seeds and deeper states. Measure successor generation cost before adding larger edge pattern databases.
 - **Evaluate a two-phase solver:** compare coverage, correctness, and complexity with bounded IDA*. Optimal face-turn search and practical arbitrary-state solving have different goals.
 - **Demonstrate harder scrambles when supported:** select a reliable case, independently verify it, and render replacement media before updating the portfolio film.
 - **Refine animation independently:** improve framing, pacing, and captions without coupling rendering to search.
@@ -92,7 +124,7 @@ rubiks-sim/
 │   ├── sim.py           # ManimGL visualisation
 │   └── main.py          # Command line interface
 ├── scripts/             # Portfolio video and scene rendering
-├── benchmarks/          # Controlled comparisons and recorded JSONL results
+├── benchmarks/          # Legacy comparison, multi-seed suite and recorded results
 ├── tests/               # Cube, solver, and rendering tests
 ├── docs/                # Algorithms, benchmarks, demo, and style notes
 │   └── media/           # Preview GIF, MP4, and recorded data

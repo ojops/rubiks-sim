@@ -1,5 +1,7 @@
 # Controlled solver comparison
 
+For broader coverage, see the [25-case multi-seed report](../benchmarks/results/multi-seed.md) and [raw JSON](../benchmarks/results/multi-seed.json). It adds isolated worker memory measurements and failure-aware aggregate comparisons. The legacy results below use a different time budget and remain preserved for provenance.
+
 Run from the repository root:
 
 ```bash
