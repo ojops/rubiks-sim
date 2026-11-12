@@ -204,9 +204,9 @@ def markdown(report):
         "",
         "Ratios exclude any case with a failed repetition: they describe the jointly solved subset, not overall speedup. Failures are censored by the declared budgets, not evidence of unsolvability. Runtime medians over all attempts mix successes and budget exhaustion.",
         "",
-        "RSS is each isolated process's high-water memory including Python, NumPy, cold table construction and all repeats. It is not incremental search allocation. The 44,555 distance-table bytes are not total process memory. Repeated RSS samples within a process are not independent.",
+        "RSS is each isolated process's high-water memory including Python, NumPy, cold table construction, and all repeats. It is not incremental search allocation. The 44,555 distance-table bytes are not total process memory. Repeated RSS samples within a process are not independent.",
         "",
-        "Generated move count is not proven optimal depth; sequences are not uniformly sampled cube states. Every solution is independently replayed on the sticker model. Hardware, interpreter and load affect timings and time-limit outcomes. No new solving algorithm is introduced.",
+        "Generated move count is not proven optimal depth; sequences are not uniformly sampled cube states. Every solution is independently replayed on the sticker model. Hardware, interpreter, and load affect timings and time-limit outcomes. No new solving algorithm is introduced.",
         "",
     ]
     return "\n".join(lines)

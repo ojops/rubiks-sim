@@ -67,7 +67,7 @@ def inverse_move(move: str) -> str:
 
 @dataclass(frozen=True)
 class SearchResult:
-    """Store the solution, stopping reason and IDA* search statistics.
+    """Store the solution, stopping reason, and IDA* search statistics.
 
     The solution is None unless solved. Node counts include bound cutoffs;
     elapsed time includes pattern setup but excludes the initial state copy.
