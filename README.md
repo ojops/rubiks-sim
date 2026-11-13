@@ -113,6 +113,7 @@ Development is incremental, with an emphasis on correct cube states, robust sear
 - **Demonstrate harder scrambles when supported:** select a reliable case, independently verify it, and render replacement media before updating the portfolio film.
 - **Add random-state scrambling:** extend the seeded random-move generator with reproducible legal-state sampling. Aim for competition worthy scrambles, with official compliance assessed separately.
 - **Refine animation independently:** improve framing, pacing, and descriptive captions without coupling rendering to search.
+- **Add colour-neutral solving:** evaluate the cross on all six faces and recommend the face requiring the fewest moves. Explore parameters such as execution difficulty and the transition into the first F2L pair. (long term, but I can dream)
 
 ## Project Structure
 
