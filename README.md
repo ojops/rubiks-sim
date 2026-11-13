@@ -107,10 +107,12 @@ Development is incremental, with an emphasis on correct cube states, robust sear
 
 ### Planned
 
+- **Add cross solving:** solve the cross on a chosen face from a 20 move scramble. Add a cross-specific search heuristic, test solution correctness, and shortest-path behaviour. 
 - **Extend measured search coverage beyond the completed 25-case suite:** test more seeds and deeper states. Measure successor generation cost before adding larger edge pattern databases.
 - **Evaluate a two-phase solver:** compare coverage, correctness, and complexity with bounded IDA*. Optimal face-turn search and practical arbitrary-state solving have different goals.
 - **Demonstrate harder scrambles when supported:** select a reliable case, independently verify it, and render replacement media before updating the portfolio film.
-- **Refine animation independently:** improve framing, pacing, and captions without coupling rendering to search.
+- **Add random-state scrambling:** extend the seeded random-move generator with reproducible legal-state sampling. Aim for competition worthy scrambles, with official compliance assessed separately.
+- **Refine animation independently:** improve framing, pacing, and descriptive captions without coupling rendering to search.
 
 ## Project Structure
 
