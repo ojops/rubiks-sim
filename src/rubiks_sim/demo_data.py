@@ -4,16 +4,17 @@ from dataclasses import asdict
 
 from rubiks_sim.cube import RubiksCube
 from rubiks_sim.cubie import CubieState
-from rubiks_sim.notation import parse_moves
+from rubiks_sim.scramble import generate_scramble
 from rubiks_sim.solver import solve
 
-SCRAMBLE = "R U F2 L"
+LENGTH, SEED = 6, 0
+SCRAMBLE = " ".join(generate_scramble(LENGTH, SEED))
 
 
 def build_demo() -> dict:
     """Solve the fixed shallow scramble, retain every exact playback boundary."""
     cube = RubiksCube()
-    scramble = parse_moves(SCRAMBLE)
+    scramble = SCRAMBLE.split()
     cube.apply_singmaster(scramble)
     result = solve(CubieState.from_cube(cube), max_depth=6, max_nodes=100_000)
     if result.solution is None:
@@ -37,6 +38,8 @@ def build_demo() -> dict:
             }
         )
     return {
+        "length": LENGTH,
+        "seed": SEED,
         "scramble": scramble,
         "search": asdict(result),
         "limits": {"max_depth": 6, "max_nodes": 100_000, "time_limit": None},
