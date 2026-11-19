@@ -21,7 +21,7 @@ def orientation(angle):
 
 
 class PortfolioCube(AnimatedRubiksCube):
-    """Play the recorded scramble and search solution over a 32-second timeline."""
+    """Play the recorded scramble and search solution on the annotated timeline."""
 
     def check_geometry(self, expected: dict) -> None:
         """Check model boundaries and rendered sticker centres and face normals."""
@@ -48,20 +48,17 @@ class PortfolioCube(AnimatedRubiksCube):
         self.frame.set_shape(6.7 * 1040 / 720, 6.7)
         self.frame.set_orientation(orientation(np.pi / 4))
         self.check_geometry(report["states"][0])
-        self.wait(2)
-        boundary = 0
-        for move in report["scramble"]:
-            self.animate_move(move, run_time=1.0)
-            boundary += 1
-            self.check_geometry(report["states"][boundary])
-        self.wait(7)
-        for move in report["search"]["solution"]:
-            self.animate_move(move, run_time=1.4)
-            boundary += 1
-            self.check_geometry(report["states"][boundary])
+        playback = report["playback"]
+        at = 0.0
+        for index, turn in enumerate(playback["turns"], start=1):
+            if turn["start"] > at:
+                self.wait(turn["start"] - at)
+            self.animate_move(turn["move"], run_time=turn["quarter_seconds"])
+            self.check_geometry(report["states"][index])
+            at = turn["end"]
         if not self.cube.is_solved():
             raise RuntimeError("Rendered playback failed solution verification.")
-        self.wait(3)
+        self.wait(playback["orbit_start"] - at)
         self.play(
             UpdateFromAlphaFunc(
                 self.frame,
@@ -69,6 +66,6 @@ class PortfolioCube(AnimatedRubiksCube):
                     orientation(np.pi / 4 + alpha * np.pi)
                 ),
             ),
-            run_time=8,
+            run_time=playback["end"] - playback["orbit_start"],
             rate_func=smooth,
         )
