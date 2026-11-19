@@ -2,15 +2,15 @@
 
 A Python project for modelling, solving, and animating Rubik's Cube moves, with optional 3D visualisation using [ManimGL](https://github.com/3b1b/manim).
 
-[![Eight-second preview of the project's cube animation](docs/media/preview.gif)](https://raw.githubusercontent.com/ojops/rubiks-sim/8d14100ea3b86da000c6b40d0c78720cfe7ea9d1/docs/media/demo.mp4)
+[![Six seeded turns animate the same scramble used in the solver benchmark](docs/media/preview.gif)](https://raw.githubusercontent.com/ojops/rubiks-sim/a213fb717badee4ff2daedff9c231fdfc2eefbc9/docs/media/demo.mp4)
 
-*Preview: a real four move scramble. [Watch the complete 32-second solve (MP4)](https://raw.githubusercontent.com/ojops/rubiks-sim/8d14100ea3b86da000c6b40d0c78720cfe7ea9d1/docs/media/demo.mp4) · [How the video is made](docs/DEMO.md).*
+*Watch the [1:05 cube walkthrough (MP4)](https://raw.githubusercontent.com/ojops/rubiks-sim/a213fb717badee4ff2daedff9c231fdfc2eefbc9/docs/media/demo.mp4). Follow a seeded scramble through search and verified 3D playback, then see how both heuristics performed across 25 cases. [Chapters and reproduction](docs/DEMO.md).*
 
 ## Overview
 
 Enter moves or generate a reproducible scramble, search for a solution within configurable limits, and animate the result. A sticker model handles geometry, while a compact corner and edge model supports search.
 
-The bounded IDA* solver uses exact coordinate distances as lower bounds. [Recorded successes](docs/BENCHMARKS.md) reach an optimal depth of eight moves, but it does not efficiently solve arbitrary states. The video shows a computed solution verified against the cube model.
+The bounded IDA* solver searches in increasing move counts. Distance tables tell it the fewest moves a simplified state could need, so it can skip branches that already exceed the current bound. [Recorded successes](docs/BENCHMARKS.md) reach an optimal depth of eight moves, but it does not efficiently solve arbitrary states. The video shows a computed solution verified against the cube model.
 
 ## Reproducible benchmark evidence
 
@@ -69,6 +69,16 @@ To animate, install the ManimGL system prerequisites (including FFmpeg, Cairo, a
 
 ## Usage
 
+To follow the film, generate its six-move scramble and solve it with the default heuristic.
+
+```bash
+uv run rubiks-sim --length 6 --seed 0 --solve --max-depth 6
+```
+
+The JSON lists the scramble `B' U' L' B' R' L` and the returned moves `R L' B L U B` in `search.solution`. Read the moves from left to right. The independent sticker model replays them and reports `"verified": true` when the cube is solved. If a cold run reaches the time limit, add `--time-limit 60`.
+
+Generate a longer scramble, enter your own moves, or set a search budget with
+
 ```bash
 uv run rubiks-sim --length 20 --seed 42
 uv run rubiks-sim --scramble "R U F" --solve
@@ -97,7 +107,7 @@ Output videos go to `videos/` by default. See [demo instructions](docs/DEMO.md) 
 
 ## Implementation
 
-`src/rubiks_sim/cube.py` tracks stickers, `cubie.py` tracks corners and edges, `solver.py` performs bounded IDA* search, and `sim.py` handles animation. Moves use `U D F B R L`, with optional `'` or `2`. Reaching a search limit **does not** mean a cube is unsolvable.
+`src/rubiks_sim/cube.py` tracks stickers, `cubie.py` tracks corners and edges, `solver.py` performs bounded IDA* search, and `sim.py` handles animation. Moves use `U D F B R L` for up, down, front, back, right, and left. Look directly at the named face. A plain letter turns it clockwise, a prime (`'`) turns it anticlockwise, and `2` makes a half turn. Reaching a search limit **does not** mean a cube is unsolvable.
 
 See [algorithm details](docs/ALGORITHMS.md) for models, validity checks, API behavior, and search assumptions.
 
@@ -112,7 +122,7 @@ Development is incremental, with an emphasis on correct cube states, robust sear
 - **Improve startup performance:** measure cold table setup separately from warm search. If persistent caching helps, validate the cache against the move-table version and rebuild corrupt or incompatible tables safely.
 - **Extend measured search coverage beyond the completed 25-case suite:** test more seeds and deeper states while retaining unsuccessful searches. Measure successor generation cost before adding larger edge pattern databases.
 - **Evaluate a two-phase solver:** compare coverage, correctness, and complexity with bounded IDA*. Optimal face-turn search and practical arbitrary-state solving have different goals.
-- **Demonstrate harder scrambles when supported:** select a reliable case, independently verify it, and render replacement media before updating the portfolio film.
+- **Demonstrate harder scrambles when supported:** the film now shows the verified six-move, seed-0 case. For a deeper case, establish a reliable search budget and independently verify the solution before filming it.
 - **Add random-state scrambling:** extend the seeded random-move generator with reproducible legal-state sampling. Aim for competition-worthy scrambles, with official compliance assessed separately.
 - **Refine animation independently:** improve framing, pacing, and descriptive captions without coupling rendering to search.
 
