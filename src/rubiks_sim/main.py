@@ -111,7 +111,7 @@ def render(moves: list[str], output_dir: Path, *, low_quality: bool = False) -> 
             if shutil.which("xvfb-run") is None:
                 raise ValueError("Headless rendering requires xvfb-run and xauth")
             command = ["xvfb-run", "-a", *command]
-        subprocess.run(command, check=True)
+        subprocess.run(command, check=True, stdout=sys.stderr)
 
 
 if __name__ == "__main__":
