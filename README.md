@@ -103,7 +103,7 @@ Render a scramble followed by its computed solution:
 uv run --extra render rubiks-sim --scramble "R U F" --solve --render --low-quality
 ```
 
-Output videos go to `videos/` by default. See [demo instructions](docs/DEMO.md) to generate the portfolio MP4 and looping preview.
+To save the JSON report alongside a render, append `> solve.json` to the command. Render progress goes to standard error. Output videos go to `videos/` by default. See [demo instructions](docs/DEMO.md) to generate the portfolio MP4 and looping preview.
 
 ## Implementation
 
